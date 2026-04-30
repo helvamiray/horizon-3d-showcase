@@ -111,7 +111,7 @@ const ProductCard = ({
                 ▸ {t("card.specs")}
               </span>
               <span className="font-mono text-[9px] text-foreground/40 uppercase tracking-widest">
-                hover
+                {t("card.hover")}
               </span>
             </div>
           </div>
@@ -142,11 +142,20 @@ const ProductCard = ({
             ))}
           </ul>
 
+          <div className="mt-3 flex items-center justify-between px-1">
+            <span className="font-display text-[9px] tracking-[0.3em] uppercase text-foreground/60">
+              {t("card.price")}
+            </span>
+            <span className="font-display text-base amber-text neon-text">
+              {p.price}
+            </span>
+          </div>
+
           <Button
             type="button"
             size="sm"
             onClick={onAdd}
-            className="mt-3 w-full bg-gradient-to-r from-amber to-amber/80 text-background hover:opacity-90 font-display tracking-[0.2em] uppercase text-[10px] h-9"
+            className="mt-2 w-full bg-gradient-to-r from-amber to-amber/80 text-background hover:opacity-90 font-display tracking-[0.2em] uppercase text-[10px] h-9"
             style={{ boxShadow: "0 0 18px oklch(0.78 0.18 65 / 0.5)" }}
           >
             {t("card.add")}
