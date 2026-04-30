@@ -541,7 +541,16 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
       registerComponent(key, g);
     };
 
-    makeEmissive("boiler", new THREE.CylinderGeometry(0.35, 0.35, 1.2, 16), [2.2, 1.0, -1.2]);
+    // Detailed Viessmann-style boiler (mechanical room, wall-hung)
+    const boilerGroup = buildBoiler();
+    boilerGroup.position.set(2.2, 1.4, -1.45);
+    registerComponent("boiler", boilerGroup);
+
+    // Industrial pipe kitbash next to boiler
+    const kitbash = buildPipeKitbash();
+    kitbash.position.set(1.0, 1.0, -1.85);
+    villaGroup.add(kitbash);
+
     makeEmissive("tank", new THREE.CylinderGeometry(0.45, 0.45, 1.6, 24), [1.0, 1.2, -1.2]);
     makeEmissive("pump", new THREE.SphereGeometry(0.28, 16, 16), [1.6, 0.4, -0.2]);
     makeEmissive("manifold", new THREE.BoxGeometry(1.6, 0.18, 0.25), [0, 0.3, -1.5]);
