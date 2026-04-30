@@ -37,6 +37,23 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
   // Update emissive whenever the highlighted key changes.
   useEffect(() => {
     highlightRef.current = highlightedKey;
+    // Compute focus target (world pos) for camera tween
+    if (highlightedKey) {
+      const obj = componentsRef.current.get(highlightedKey);
+      if (obj) {
+        const box = new THREE.Box3().setFromObject(obj);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        focusTargetRef.current = center;
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        focusRadiusRef.current = Math.max(4, Math.min(10, maxDim * 4 + 3));
+      }
+    } else {
+      focusTargetRef.current = null;
+      focusRadiusRef.current = null;
+    }
     componentsRef.current.forEach((obj, key) => {
       const active = key === highlightedKey;
       obj.traverse((child) => {
