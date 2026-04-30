@@ -23,6 +23,10 @@ export interface Product {
   image: string;
   /** Background video URL for the product card (auto-playing, muted, looped) */
   video: string;
+  /** Indicative price label shown on the card back (TR formatting). */
+  price: string;
+  /** Optional 3D preview kind for the front of the card. */
+  preview3d?: "ac" | "heatpump" | "fire-extinguisher";
 }
 
 // All product cards share one fallback video (only one is bundled in /public/videos).
