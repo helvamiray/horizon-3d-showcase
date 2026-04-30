@@ -270,6 +270,176 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
       return g;
     };
 
+    /** Wall-mounted ABC fire extinguisher (red bottle + brass valve). */
+    const buildExtinguisher = () => {
+      const g = new THREE.Group();
+      const red = new THREE.MeshStandardMaterial({ color: 0xc0392b, metalness: 0.55, roughness: 0.35 });
+      const brass = new THREE.MeshStandardMaterial({ color: 0xd4a04a, metalness: 0.85, roughness: 0.25 });
+      const black = new THREE.MeshStandardMaterial({ color: 0x161a20, metalness: 0.4, roughness: 0.6 });
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.45, 24), red);
+      g.add(body);
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), red);
+      dome.position.y = 0.225;
+      g.add(dome);
+      const bot = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), red);
+      bot.rotation.x = Math.PI;
+      bot.position.y = -0.225;
+      g.add(bot);
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.06, 0.05, 16), brass);
+      neck.position.y = 0.32;
+      g.add(neck);
+      const valve = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.07, 0.1), brass);
+      valve.position.y = 0.38;
+      g.add(valve);
+      const handle = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.014, 0.026), black);
+      handle.position.set(0, 0.435, 0);
+      g.add(handle);
+      const gauge = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.035, 0.035, 0.018, 16),
+        new THREE.MeshStandardMaterial({ color: 0xf5f5f0, metalness: 0.2, roughness: 0.4 })
+      );
+      gauge.rotation.x = Math.PI / 2;
+      gauge.position.set(0, 0.39, 0.06);
+      g.add(gauge);
+      const baseRing = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.025, 24), black);
+      baseRing.position.y = -0.29;
+      g.add(baseRing);
+      // Wall bracket
+      const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.04), metalMat(0xb0b8bf));
+      bracket.position.set(0, 0, -0.13);
+      g.add(bracket);
+      return g;
+    };
+
+    /** Viessmann-style condensing boiler cabinet + flue + condensate pipe. */
+    const buildBoiler = () => {
+      const g = new THREE.Group();
+      const cabMat = new THREE.MeshStandardMaterial({ color: 0xf5f7f9, metalness: 0.25, roughness: 0.4 });
+      const accent = new THREE.MeshStandardMaterial({ color: 0xc83a3a, metalness: 0.4, roughness: 0.4 });
+      const dark = new THREE.MeshStandardMaterial({ color: 0x222831, metalness: 0.5, roughness: 0.4 });
+
+      // Main cabinet (tall wall-hung box)
+      const cab = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.1, 0.45), cabMat);
+      g.add(cab);
+      // Top accent stripe (Viessmann red)
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.06, 0.46), accent);
+      stripe.position.y = 0.45;
+      g.add(stripe);
+      // Display
+      const display = new THREE.Mesh(
+        new THREE.BoxGeometry(0.32, 0.12, 0.01),
+        new THREE.MeshStandardMaterial({
+          color: 0x0a1626, emissive: 0x00f0ff, emissiveIntensity: 0.8,
+        })
+      );
+      display.position.set(0, 0.18, 0.226);
+      g.add(display);
+      // Logo plate
+      const logo = new THREE.Mesh(
+        new THREE.BoxGeometry(0.28, 0.05, 0.005),
+        new THREE.MeshStandardMaterial({ color: 0xc83a3a })
+      );
+      logo.position.set(0, 0.34, 0.228);
+      g.add(logo);
+      // Bottom vents
+      for (let i = 0; i < 8; i++) {
+        const v = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.012, 0.005), dark);
+        v.position.set(0, -0.32 + i * 0.025, 0.226);
+        g.add(v);
+      }
+      // Flue pipe (concentric, going up through ceiling)
+      const flue = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.07, 0.07, 1.4, 16),
+        metalMat(0xc8ccd1)
+      );
+      flue.position.set(-0.2, 1.25, 0);
+      g.add(flue);
+      const flueOuter = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.09, 0.09, 0.4, 16),
+        metalMat(0xa8acb1)
+      );
+      flueOuter.position.set(-0.2, 0.65, 0);
+      g.add(flueOuter);
+      // Gas pipe (yellow)
+      const gas = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.025, 0.5, 12),
+        new THREE.MeshStandardMaterial({ color: 0xe8c842, metalness: 0.6, roughness: 0.3 })
+      );
+      gas.position.set(0.18, -0.8, 0);
+      g.add(gas);
+      // Hydraulic flow/return pipes (red/blue)
+      [
+        { x: -0.12, color: 0xc0392b },
+        { x: 0, color: 0x1f5fa8 },
+        { x: 0.12, color: 0xd4a04a },
+      ].forEach((p) => {
+        const pipe = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.022, 0.022, 0.45, 12),
+          new THREE.MeshStandardMaterial({ color: p.color, metalness: 0.55, roughness: 0.35 })
+        );
+        pipe.position.set(p.x, -0.78, 0);
+        g.add(pipe);
+      });
+      return g;
+    };
+
+    /** Industrial kitbash: copper/steel pipes, elbows, gauges along the wall. */
+    const buildPipeKitbash = () => {
+      const g = new THREE.Group();
+      const copper = new THREE.MeshStandardMaterial({ color: 0xb87333, metalness: 0.85, roughness: 0.3 });
+      const steel = new THREE.MeshStandardMaterial({ color: 0x9aa3ad, metalness: 0.85, roughness: 0.3 });
+      const brass = new THREE.MeshStandardMaterial({ color: 0xd4a04a, metalness: 0.85, roughness: 0.25 });
+
+      // Horizontal copper run
+      const main = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.6, 16), copper);
+      main.rotation.z = Math.PI / 2;
+      main.position.set(0, 0.25, -0.05);
+      g.add(main);
+      // Lower steel run
+      const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.6, 16), steel);
+      lower.rotation.z = Math.PI / 2;
+      lower.position.set(0, 0.05, 0.08);
+      g.add(lower);
+      // Elbows + drops
+      [-0.6, -0.2, 0.2, 0.6].forEach((x) => {
+        const elbow = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.035, 10, 16, Math.PI / 2), copper);
+        elbow.position.set(x, 0.25, -0.05);
+        elbow.rotation.x = Math.PI / 2;
+        g.add(elbow);
+        const drop = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.35, 12), copper);
+        drop.position.set(x, 0.08, -0.05);
+        g.add(drop);
+        // Brass valve
+        const valve = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.06), brass);
+        valve.position.set(x, -0.12, -0.05);
+        g.add(valve);
+        // Wheel handle
+        const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.008, 8, 18), brass);
+        wheel.position.set(x, -0.12, 0.05);
+        wheel.rotation.y = Math.PI / 2;
+        g.add(wheel);
+      });
+      // Pressure gauge
+      const gaugeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 20), steel);
+      gaugeBody.rotation.x = Math.PI / 2;
+      gaugeBody.position.set(0.4, 0.42, -0.05);
+      g.add(gaugeBody);
+      const dial = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.06, 0.06, 0.005, 20),
+        new THREE.MeshStandardMaterial({ color: 0xf7f3e6 })
+      );
+      dial.rotation.x = Math.PI / 2;
+      dial.position.set(0.4, 0.42, -0.025);
+      g.add(dial);
+      // Pipe brackets on wall
+      [-0.7, -0.3, 0.3, 0.7].forEach((x) => {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.08, 0.04), steel);
+        b.position.set(x, 0.25, -0.1);
+        g.add(b);
+      });
+      return g;
+    };
+
     /** Fire suppression assembly: red riser pipe, valve, sprinkler heads. */
     const buildFireSystem = () => {
       const g = new THREE.Group();
@@ -321,6 +491,10 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
         head.position.set(x, 1.45, 0);
         g.add(head);
       });
+      // Wall-mounted extinguisher next to riser
+      const ext = buildExtinguisher();
+      ext.position.set(0.55, 0.3, -0.35);
+      g.add(ext);
       return g;
     };
 
