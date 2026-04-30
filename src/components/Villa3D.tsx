@@ -681,15 +681,25 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
 
     let raf = 0;
     let autoYaw = 0;
+    const defaultLook = new THREE.Vector3(0, 2.5, 0);
+    const currentLook = defaultLook.clone();
+    let currentRadius = radius;
     const animate = () => {
       raf = requestAnimationFrame(animate);
-      autoYaw += 0.0015;
+      autoYaw += isDown || focusTargetRef.current ? 0 : 0.0015;
       const effectiveYaw = isDown ? yaw : yaw + autoYaw;
-      const x = Math.sin(effectiveYaw) * Math.cos(pitch) * radius;
-      const z = Math.cos(effectiveYaw) * Math.cos(pitch) * radius;
-      const y = Math.sin(pitch) * radius + 3;
-      camera.position.set(x, y, z);
-      camera.lookAt(0, 2.5, 0);
+
+      // Lerp lookAt + radius toward focus target (or back to default)
+      const targetLook = focusTargetRef.current ?? defaultLook;
+      const targetRadius = focusRadiusRef.current ?? radius;
+      currentLook.lerp(targetLook, 0.06);
+      currentRadius += (targetRadius - currentRadius) * 0.06;
+
+      const cx = Math.sin(effectiveYaw) * Math.cos(pitch) * currentRadius + currentLook.x;
+      const cz = Math.cos(effectiveYaw) * Math.cos(pitch) * currentRadius + currentLook.z;
+      const cy = Math.sin(pitch) * currentRadius + currentLook.y + 1.5;
+      camera.position.set(cx, cy, cz);
+      camera.lookAt(currentLook);
 
       // Pulse the highlighted component's halo
       componentsRef.current.forEach((obj, key) => {
