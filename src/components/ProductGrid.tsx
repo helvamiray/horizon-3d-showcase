@@ -62,15 +62,24 @@ const ProductCard = ({
               : undefined
           }
         >
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
-            autoPlay muted loop playsInline
-            poster={p.image}
-          >
-            <source src={p.video} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/10" />
+          {p.preview3d ? (
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-background via-secondary/40 to-background" />
+              <Mini3DPreview kind={p.preview3d} />
+            </div>
+          ) : (
+            <>
+              <video
+                ref={videoRef}
+                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
+                autoPlay muted loop playsInline
+                poster={p.image}
+              >
+                <source src={p.video} type="video/mp4" />
+              </video>
+            </>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/0 pointer-events-none" />
 
           <div className="relative h-full flex flex-col p-5">
             <div className="flex items-start justify-between gap-3 mb-2">
