@@ -224,6 +224,28 @@ function Index() {
         </div>
       </section>
 
+      {/* Solutions */}
+      <section id="solutions" className="container py-20 md:py-28">
+        <div data-reveal className="mb-12 max-w-3xl">
+          <span className="font-display text-[10px] tracking-[0.4em] uppercase text-cyan">{t("solutions.eyebrow")}</span>
+          <h2 className="font-display text-3xl md:text-5xl mt-3 mb-4">{t("solutions.title")}</h2>
+          <p className="text-foreground/70">{t("solutions.subtitle")}</p>
+        </div>
+        <SolutionsSection />
+      </section>
+
+      {/* Projects map */}
+      <section id="projects" className="container py-20 md:py-28">
+        <div data-reveal className="mb-10 max-w-3xl">
+          <span className="font-display text-[10px] tracking-[0.4em] uppercase text-cyan">{t("projects.eyebrow")}</span>
+          <h2 className="font-display text-3xl md:text-5xl mt-3 mb-4">{t("projects.title")}</h2>
+          <p className="text-foreground/70">{t("projects.subtitle")}</p>
+        </div>
+        <div data-reveal>
+          <TurkeyProjectsMap />
+        </div>
+      </section>
+
       {/* Quote */}
       <section id="quote" className="container py-20 md:py-28">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -254,8 +276,30 @@ function Index() {
         </div>
       </section>
 
-      <footer className="border-t border-cyan/15 mt-10">
-        <div className="container py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono text-foreground/50">
+      {/* Footer with Bize Ulaşın */}
+      <footer id="contact" className="border-t border-cyan/15 mt-10">
+        <div className="container py-14">
+          <div data-reveal className="grid md:grid-cols-[1fr_auto] gap-8 items-center glass rounded-2xl p-8 md:p-10 border border-cyan/30">
+            <div>
+              <span className="font-display text-[10px] tracking-[0.4em] uppercase amber-text">
+                {t("footer.contact.eyebrow")}
+              </span>
+              <h3 className="font-display text-2xl md:text-3xl mt-2 mb-2">
+                {t("footer.contact.title")}
+              </h3>
+              <p className="text-foreground/70 max-w-xl">{t("footer.contact.body")}</p>
+            </div>
+            <a
+              href="mailto:mirayhelva15@icloud.com"
+              className="inline-flex items-center gap-3 px-6 h-12 rounded-md bg-gradient-to-r from-cyan to-cyan-glow text-primary-foreground font-display tracking-[0.25em] uppercase text-xs transition-all hover:opacity-90"
+              style={{ boxShadow: "0 0 24px oklch(0.78 0.16 210 / 0.5)" }}
+            >
+              <Mail className="w-4 h-4" />
+              <span>mirayhelva15@icloud.com</span>
+            </a>
+          </div>
+        </div>
+        <div className="container pb-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] font-mono text-foreground/50">
           <div>© {new Date().getFullYear()} {t("footer.copy")}</div>
           <div className="tracking-[0.25em] uppercase">{t("footer.tag")}</div>
         </div>
