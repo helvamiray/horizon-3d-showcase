@@ -9,10 +9,12 @@ import VegaVideo from "@/components/VegaVideo";
 import QuoteForm from "@/components/QuoteForm";
 import SocialIcons from "@/components/SocialIcons";
 import LanguageToggle from "@/components/LanguageToggle";
+import SolutionsSection from "@/components/SolutionsSection";
+import TurkeyProjectsMap from "@/components/TurkeyProjectsMap";
 import { PRODUCTS } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { ShoppingBag } from "lucide-react";
+import { Mail, ShoppingBag } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -90,10 +92,12 @@ function Index() {
             </div>
           </a>
 
-          <nav className="hidden md:flex items-center gap-8 font-display text-xs tracking-[0.25em] uppercase text-foreground/70">
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8 font-display text-xs tracking-[0.25em] uppercase text-foreground/70">
             <a href="#hakkimizda" className="hover:text-cyan transition-colors">{t("nav.about")}</a>
             <a href="#twin" className="hover:text-cyan transition-colors">{t("nav.twin")}</a>
             <a href="#systems" className="hover:text-cyan transition-colors">{t("nav.products")}</a>
+            <a href="#solutions" className="hover:text-cyan transition-colors">{t("nav.solutions")}</a>
+            <a href="#projects" className="hover:text-cyan transition-colors">{t("nav.projects")}</a>
             <a href="#vizyon" className="hover:text-cyan transition-colors">{t("nav.vision")}</a>
             <a href="#quote" className="hover:text-cyan transition-colors">{t("nav.quote")}</a>
           </nav>
