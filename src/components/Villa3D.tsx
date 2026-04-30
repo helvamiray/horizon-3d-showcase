@@ -30,6 +30,8 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const componentsRef = useRef<Map<string, THREE.Object3D>>(new Map());
   const highlightRef = useRef<string | null>(null);
+  const focusTargetRef = useRef<THREE.Vector3 | null>(null);
+  const focusRadiusRef = useRef<number | null>(null);
   const { t } = useLanguage();
 
   // Update emissive whenever the highlighted key changes.
