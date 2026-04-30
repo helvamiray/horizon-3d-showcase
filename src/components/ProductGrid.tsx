@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Mini3DPreview from "@/components/Mini3DPreview";
 
 interface ProductGridProps {
   products: Product[];
@@ -61,15 +62,24 @@ const ProductCard = ({
               : undefined
           }
         >
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
-            autoPlay muted loop playsInline
-            poster={p.image}
-          >
-            <source src={p.video} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/10" />
+          {p.preview3d ? (
+            <div className="absolute inset-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-background via-secondary/40 to-background" />
+              <Mini3DPreview kind={p.preview3d} />
+            </div>
+          ) : (
+            <>
+              <video
+                ref={videoRef}
+                className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
+                autoPlay muted loop playsInline
+                poster={p.image}
+              >
+                <source src={p.video} type="video/mp4" />
+              </video>
+            </>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/0 pointer-events-none" />
 
           <div className="relative h-full flex flex-col p-5">
             <div className="flex items-start justify-between gap-3 mb-2">
@@ -101,7 +111,7 @@ const ProductCard = ({
                 ▸ {t("card.specs")}
               </span>
               <span className="font-mono text-[9px] text-foreground/40 uppercase tracking-widest">
-                hover
+                {t("card.hover")}
               </span>
             </div>
           </div>
@@ -132,11 +142,20 @@ const ProductCard = ({
             ))}
           </ul>
 
+          <div className="mt-3 flex items-center justify-between px-1">
+            <span className="font-display text-[9px] tracking-[0.3em] uppercase text-foreground/60">
+              {t("card.price")}
+            </span>
+            <span className="font-display text-base amber-text neon-text">
+              {p.price}
+            </span>
+          </div>
+
           <Button
             type="button"
             size="sm"
             onClick={onAdd}
-            className="mt-3 w-full bg-gradient-to-r from-amber to-amber/80 text-background hover:opacity-90 font-display tracking-[0.2em] uppercase text-[10px] h-9"
+            className="mt-2 w-full bg-gradient-to-r from-amber to-amber/80 text-background hover:opacity-90 font-display tracking-[0.2em] uppercase text-[10px] h-9"
             style={{ boxShadow: "0 0 18px oklch(0.78 0.18 65 / 0.5)" }}
           >
             {t("card.add")}
