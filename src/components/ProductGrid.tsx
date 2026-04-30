@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
+import Mini3DPreview from "@/components/Mini3DPreview";
 
 interface ProductGridProps {
   products: Product[];
