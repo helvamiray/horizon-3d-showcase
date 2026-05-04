@@ -1,25 +1,26 @@
 import { useMemo, useState } from "react";
-import { PRODUCTS, type Product } from "@/data/products";
+import { type Product } from "@/data/products";
 import ProductGrid from "./ProductGrid";
 import { Input } from "@/components/ui/input";
 import { Search, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Props {
+  products: Product[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
 
 const FEATURED_BRANDS = ["Daikin", "Buderus", "E.C.A", "LOWARA", "KODSAN", "CALEFFI", "FRANKISCHE", "Tyco"];
 
-const ProductExplorer = ({ selectedId, onSelect }: Props) => {
+const ProductExplorer = ({ products, selectedId, onSelect }: Props) => {
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState<string | null>(null);
   const { t, lang } = useLanguage();
 
   const filtered = useMemo<Product[]>(() => {
     const q = query.trim().toLocaleLowerCase(lang === "tr" ? "tr" : "en");
-    return PRODUCTS.filter((p) => {
+    return products.filter((p) => {
       if (brand && p.brand !== brand) return false;
       if (!q) return true;
       const name = lang === "tr" ? p.name : p.name_en;
@@ -28,7 +29,7 @@ const ProductExplorer = ({ selectedId, onSelect }: Props) => {
       const hay = `${name} ${p.brand} ${desc} ${p.category} ${specs}`.toLocaleLowerCase(lang === "tr" ? "tr" : "en");
       return hay.includes(q);
     });
-  }, [query, brand, lang]);
+  }, [query, brand, lang, products]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -85,7 +86,7 @@ const ProductExplorer = ({ selectedId, onSelect }: Props) => {
 
       <div className="flex items-center justify-between px-1">
         <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-foreground/50">
-          {filtered.length} / {PRODUCTS.length} {t("explorer.results")}
+          {filtered.length} / {products.length} {t("explorer.results")}
         </span>
         {(query || brand) && (
           <button

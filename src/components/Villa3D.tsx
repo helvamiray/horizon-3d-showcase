@@ -680,14 +680,12 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
     ro.observe(mount);
 
     let raf = 0;
-    let autoYaw = 0;
     const defaultLook = new THREE.Vector3(0, 2.5, 0);
     const currentLook = defaultLook.clone();
     let currentRadius = radius;
     const animate = () => {
       raf = requestAnimationFrame(animate);
-      autoYaw += isDown || focusTargetRef.current ? 0 : 0.0015;
-      const effectiveYaw = isDown ? yaw : yaw + autoYaw;
+      const effectiveYaw = yaw;
 
       // Lerp lookAt + radius toward focus target (or back to default)
       const targetLook = focusTargetRef.current ?? defaultLook;

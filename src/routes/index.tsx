@@ -11,24 +11,32 @@ import SocialIcons from "@/components/SocialIcons";
 import LanguageToggle from "@/components/LanguageToggle";
 import SolutionsSection from "@/components/SolutionsSection";
 import TurkeyProjectsMap from "@/components/TurkeyProjectsMap";
-import { PRODUCTS } from "@/data/products";
-import { useCart } from "@/context/CartContext";
+import { PRODUCTS, type Product } from "@/data/products";
+import { useCart } from "@/providers/CartContext";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Mail, ShoppingBag } from "lucide-react";
+import { getProducts } from "@/lib/productService";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
-  const [selectedId, setSelectedId] = useState<string | null>(PRODUCTS[0].id);
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [selectedId, setSelectedId] = useState<string | null>(PRODUCTS[0]?.id ?? null);
   const rootRef = useRef<HTMLDivElement>(null);
   const { count, openCart } = useCart();
   const { t } = useLanguage();
 
+  useEffect(() => {
+    const loaded = getProducts();
+    setProducts(loaded);
+    setSelectedId((prev) => (loaded.find((p) => p.id === prev) ? prev : (loaded[0]?.id ?? null)));
+  }, []);
+
   const highlightedKey = useMemo(
-    () => PRODUCTS.find((p) => p.id === selectedId)?.componentKey ?? null,
-    [selectedId]
+    () => products.find((p) => p.id === selectedId)?.componentKey ?? null,
+    [products, selectedId]
   );
 
   useEffect(() => {
@@ -170,7 +178,7 @@ function Index() {
             <Villa3D highlightedKey={highlightedKey} />
           </div>
           <div data-reveal className="lg:col-span-2 max-h-[680px] overflow-y-auto pr-1">
-            <ProductExplorer selectedId={selectedId} onSelect={setSelectedId} />
+            <ProductExplorer products={products} selectedId={selectedId} onSelect={setSelectedId} />
           </div>
         </div>
       </section>

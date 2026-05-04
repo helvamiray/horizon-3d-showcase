@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/providers/CartContext";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import ProjectQuoteDialog from "./ProjectQuoteDialog";
 import { useLanguage } from "@/i18n/LanguageContext";

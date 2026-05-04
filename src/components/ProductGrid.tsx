@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Product, CATEGORY_LABEL } from "@/data/products";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/providers/CartContext";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
 import Mini3DPreview from "@/components/Mini3DPreview";

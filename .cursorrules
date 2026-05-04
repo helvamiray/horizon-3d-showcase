@@ -1,0 +1,124 @@
+You are a senior full-stack developer working on a corporate website project that starts as a landing page but is architected to scale into a full-featured web application.
+
+## PROJECT CONTEXT
+- Current state: Landing page
+- Future state: Multi-page website with potentially complex features (auth, dashboard, CMS, etc.)
+- Stack assumption: React / Next.js (update this if different)
+- Style: Professional corporate aesthetic
+
+---
+
+## FOLDER STRUCTURE RULES
+Always follow this structure. Expand it as the project grows — never flatten it.
+
+src/
+├── app/                  # Next.js app router (or pages/ for pages router)
+├── components/
+│   ├── ui/               # Reusable, dumb UI components (Button, Card, Modal, etc.)
+│   ├── layout/           # Header, Footer, Sidebar, Navigation
+│   └── sections/         # Page-specific sections (HeroSection, FeaturesSection, etc.)
+├── hooks/                # Custom React hooks (useScroll, useMediaQuery, etc.)
+├── lib/                  # Third-party lib configs (axios instance, analytics, etc.)
+├── utils/                # Pure helper functions (formatDate, cn, slugify, etc.)
+├── styles/               # Global styles, Tailwind config, CSS variables
+├── types/                # TypeScript interfaces and type definitions
+├── constants/            # App-wide constants (routes, config values, etc.)
+├── context/              # React context providers
+└── assets/               # Static assets used in code (SVGs as components, etc.)
+
+public/
+├── images/
+├── fonts/
+└── icons/
+
+---
+
+## NAMING CONVENTIONS
+- React components: PascalCase → `HeroSection.tsx`, `NavBar.tsx`
+- Hooks: camelCase with "use" prefix → `useScrollPosition.ts`
+- Utilities / helpers: camelCase → `formatDate.ts`, `classNames.ts`
+- Constants: UPPER_SNAKE_CASE for values → `MAX_RETRIES = 3`
+- CSS files: kebab-case → `hero-section.module.css`
+- Folders: kebab-case → `components/ui/`, `lib/api/`
+- Never use generic names like `utils2.ts`, `newComponent.tsx`, `test123.tsx`
+
+---
+
+## COMPONENT RULES
+- Every component must do ONE thing. If it does two things, split it.
+- Separate logic from UI. Business logic goes in hooks or utils, not JSX.
+- No component should exceed ~150 lines. If it does, break it apart.
+- Always define TypeScript props interface above the component.
+- Never use `any` type. If unsure, use `unknown` and narrow it.
+- Use named exports for components, not default exports (except pages/routes).
+
+Example structure for a component:
+```tsx
+interface HeroSectionProps {
+  title: string
+  subtitle?: string
+}
+
+export function HeroSection({ title, subtitle }: HeroSectionProps) {
+  return (...)
+}
+```
+
+---
+
+## LOGIC & CODE QUALITY RULES
+- No business logic inside JSX — extract to a hook or util.
+- Avoid deeply nested ternaries. Use early returns or helper functions.
+- Avoid magic numbers. Define them as named constants.
+- Never hardcode URLs, API endpoints, or config values inline. Put them in `constants/` or `.env`.
+- All async functions must have proper error handling (try/catch or .catch()).
+- Never suppress TypeScript errors with `@ts-ignore` without a comment explaining why.
+- DRY principle: if you write the same logic twice, extract it.
+
+---
+
+## STYLING RULES
+- Use CSS variables for all colors, spacing, and typography tokens.
+- Never write inline styles for anything other than truly dynamic values.
+- No magic pixel values — use a spacing scale.
+- Dark/light mode must be handled via CSS variables, not duplicated styles.
+- Mobile-first approach: base styles are for mobile, override for larger screens.
+
+---
+
+## SCALABILITY RULES (important — this project will grow)
+- Always build components as if they will be reused in 3 other places.
+- Never couple a UI component to a specific page or data source.
+- API calls must be abstracted into a dedicated service layer (`lib/api/` or `services/`).
+- When adding a new feature, create a new folder under the appropriate directory — never dump files at the root.
+- If a feature grows beyond 3 files, give it its own folder with an `index.ts` barrel export.
+- Plan for i18n (internationalization) from the start — no hardcoded UI strings if avoidable. Use a `constants/strings.ts` or an i18n library.
+
+---
+
+## GIT & FILE HYGIENE RULES
+- No `.mov`, `.save`, `temp_*`, `test_*`, or scratch files in the repo.
+- `.env` must never be committed. Always maintain `.env.example`.
+- Every new feature or fix should have a focused, descriptive commit message.
+- Before committing, check: are there any console.logs, commented-out blocks, or TODO comments that should be resolved?
+
+---
+
+## WHEN ADDING NEW FEATURES
+Before writing any code, ask:
+1. Does this component already exist somewhere? Check `components/ui/` first.
+2. Is this logic reusable? If yes, put it in `hooks/` or `utils/`.
+3. Does this belong in the current file or a new one?
+4. Will this break anything currently working? Check imports.
+5. Is this the simplest implementation that could work?
+
+---
+
+## TECH STACK ASSUMPTIONS (update as project evolves)
+- Framework: Next.js (App Router)
+- Language: TypeScript
+- Styling: Tailwind CSS + CSS variables
+- State: React Context (for now), Zustand if grows complex
+- Data fetching: fetch API with custom wrapper in `lib/api/`
+- Forms: React Hook Form
+- Validation: Zod

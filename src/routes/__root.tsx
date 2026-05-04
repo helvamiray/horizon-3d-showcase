@@ -1,10 +1,10 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { LanguageProvider } from "@/i18n/LanguageContext";
-import { CartProvider } from "@/context/CartContext";
+import { CartProvider } from "@/providers/CartContext";
 import CartSidebar from "@/components/CartSidebar";
 import { Toaster } from "@/components/ui/sonner";
 
-import appCss from "../styles.css?url";
+import appCss from "../styles/global.css?url";
 
 function NotFoundComponent() {
   return (
