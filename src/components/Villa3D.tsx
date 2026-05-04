@@ -1,10 +1,21 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import gsap from "gsap";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { BLUEPRINT_COLOR, SCENE_POSITIONS, snapToGrid, v3 } from "@/3d/sceneConstants";
+import { sceneComponentService, type SceneComponent } from "@/lib/sceneComponentService";
+import { getProducts } from "@/lib/productService";
 
 interface Villa3DProps {
   highlightedKey: string | null;
+}
+
+interface InteractiveMeta {
+  componentId: string;
+  componentType: string;
+  label: string;
+  interactive: true;
 }
 
 /**
@@ -32,6 +43,14 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
   const highlightRef = useRef<string | null>(null);
   const focusTargetRef = useRef<THREE.Vector3 | null>(null);
   const focusRadiusRef = useRef<number | null>(null);
+  const interactiveMeshesRef = useRef<THREE.Object3D[]>([]);
+  const componentConfigRef = useRef<Map<string, SceneComponent>>(new Map());
+  const defaultCameraRef = useRef({ position: SCENE_POSITIONS.CAMERA_DEFAULT_POSITION.clone(), lookAt: SCENE_POSITIONS.CAMERA_DEFAULT_LOOK_AT.clone() });
+  const blueprintModeRef = useRef(false);
+  const resetCameraRef = useRef<(() => void) | null>(null);
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(null);
+  const [blueprintMode, setBlueprintMode] = useState(false);
+  const [labelPositions, setLabelPositions] = useState<Record<string, { x: number; y: number }>>({});
   const { t } = useLanguage();
 
   // Update emissive whenever the highlighted key changes.
@@ -83,6 +102,17 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
     });
   }, [highlightedKey]);
 
+  const publicProducts = getProducts();
+  const selectedSceneComponent = selectedComponentId ? componentConfigRef.current.get(selectedComponentId) ?? null : null;
+  const linkedProduct = selectedSceneComponent?.linkedProductId
+    ? publicProducts.find((product) => product.id === selectedSceneComponent.linkedProductId) ?? null
+    : null;
+
+  useEffect(() => {
+    blueprintModeRef.current = blueprintMode;
+    if (!blueprintMode) setLabelPositions({});
+  }, [blueprintMode]);
+
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
@@ -92,10 +122,22 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x020617, 0.04);
+    const sceneComponents = sceneComponentService.getAll();
+    componentConfigRef.current = new Map(sceneComponents.map((component) => [component.id, component]));
+    const getScenePlacement = (id: string, fallback: THREE.Vector3, fallbackRotationY = 0) => {
+      const config = componentConfigRef.current.get(id);
+      return {
+        position: config ? v3(config.position.x, config.position.y, config.position.z) : fallback.clone(),
+        rotation: config
+          ? new THREE.Euler(config.rotation.x, config.rotation.y, config.rotation.z)
+          : new THREE.Euler(0, fallbackRotationY, 0),
+        visible: config?.visible ?? true,
+      };
+    };
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(8, 6, 10);
-    camera.lookAt(0, 1.5, 0);
+    camera.position.copy(SCENE_POSITIONS.CAMERA_DEFAULT_POSITION);
+    camera.lookAt(SCENE_POSITIONS.CAMERA_DEFAULT_LOOK_AT);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -124,46 +166,91 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
     // === Villa shell (wireframe) ===
     const villaGroup = new THREE.Group();
     const wireMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.75 });
-    const wallGeom = new THREE.BoxGeometry(6, 3, 4);
+    const wallGeom = new THREE.BoxGeometry(
+      SCENE_POSITIONS.WALL_WIDTH,
+      SCENE_POSITIONS.WALL_HEIGHT,
+      SCENE_POSITIONS.WALL_DEPTH
+    );
     const walls = new THREE.LineSegments(new THREE.EdgesGeometry(wallGeom), wireMat);
-    walls.position.y = 1.5;
+    walls.position.y = SCENE_POSITIONS.FIRST_FLOOR_Y + SCENE_POSITIONS.WALL_HEIGHT / 2;
     villaGroup.add(walls);
 
-    const floor2Geom = new THREE.BoxGeometry(6, 2.4, 4);
+    const floor2Geom = new THREE.BoxGeometry(
+      SCENE_POSITIONS.WALL_WIDTH,
+      SCENE_POSITIONS.WALL_HEIGHT - 0.5,
+      SCENE_POSITIONS.WALL_DEPTH
+    );
     const floor2 = new THREE.LineSegments(new THREE.EdgesGeometry(floor2Geom), wireMat);
-    floor2.position.y = 4.2;
+    floor2.position.y = SCENE_POSITIONS.SECOND_FLOOR_Y + 1.2;
     villaGroup.add(floor2);
 
     const roofGeom = new THREE.ConeGeometry(4.3, 1.8, 4);
     const roof = new THREE.LineSegments(new THREE.EdgesGeometry(roofGeom), wireMat);
-    roof.position.y = 6.3;
+    roof.position.y = SCENE_POSITIONS.CEILING_Y + 0.5;
     roof.rotation.y = Math.PI / 4;
     villaGroup.add(roof);
 
     const ghostMat = new THREE.MeshBasicMaterial({
       color: 0x00f0ff, transparent: true, opacity: 0.04, side: THREE.DoubleSide,
     });
-    villaGroup.add(new THREE.Mesh(wallGeom, ghostMat).translateY(1.5));
-    villaGroup.add(new THREE.Mesh(floor2Geom, ghostMat).translateY(4.2));
+    villaGroup.add(
+      new THREE.Mesh(wallGeom, ghostMat).translateY(
+        SCENE_POSITIONS.FIRST_FLOOR_Y + SCENE_POSITIONS.WALL_HEIGHT / 2
+      )
+    );
+    villaGroup.add(new THREE.Mesh(floor2Geom, ghostMat).translateY(SCENE_POSITIONS.SECOND_FLOOR_Y + 1.2));
 
     const zoneMat = new THREE.LineBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.45 });
     const livingGeom = new THREE.BoxGeometry(3.2, 2.8, 3.6);
     const living = new THREE.LineSegments(new THREE.EdgesGeometry(livingGeom), zoneMat);
-    living.position.set(-1.4, 1.5, 0);
+    living.position.set(
+      snapToGrid((SCENE_POSITIONS.SALON.x[0] + SCENE_POSITIONS.SALON.x[1]) / 2),
+      SCENE_POSITIONS.FIRST_FLOOR_Y + 1.5,
+      0
+    );
     villaGroup.add(living);
     const mechGeom = new THREE.BoxGeometry(2.4, 2.8, 3.6);
     const mech = new THREE.LineSegments(new THREE.EdgesGeometry(mechGeom), zoneMat);
-    mech.position.set(1.6, 1.5, 0);
+    mech.position.set(
+      snapToGrid((SCENE_POSITIONS.MECHANICAL_ROOM.x[0] + SCENE_POSITIONS.MECHANICAL_ROOM.x[1]) / 2),
+      SCENE_POSITIONS.FIRST_FLOOR_Y + 1.5,
+      0
+    );
     villaGroup.add(mech);
     const bedGeom = new THREE.BoxGeometry(2.8, 2.2, 3.6);
-    villaGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(bedGeom), zoneMat).translateX(-1.5).translateY(4.2));
-    villaGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(bedGeom), zoneMat).translateX(1.5).translateY(4.2));
-    const slabGeom = new THREE.BoxGeometry(6, 0.08, 4);
-    villaGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(slabGeom), zoneMat).translateY(3));
+    villaGroup.add(
+      new THREE.LineSegments(new THREE.EdgesGeometry(bedGeom), zoneMat)
+        .translateX(-1.5)
+        .translateY(SCENE_POSITIONS.SECOND_FLOOR_Y + 1.2)
+    );
+    villaGroup.add(
+      new THREE.LineSegments(new THREE.EdgesGeometry(bedGeom), zoneMat)
+        .translateX(1.5)
+        .translateY(SCENE_POSITIONS.SECOND_FLOOR_Y + 1.2)
+    );
+    const slabGeom = new THREE.BoxGeometry(
+      SCENE_POSITIONS.WALL_WIDTH,
+      0.08,
+      SCENE_POSITIONS.WALL_DEPTH
+    );
+    villaGroup.add(new THREE.LineSegments(new THREE.EdgesGeometry(slabGeom), zoneMat).translateY(SCENE_POSITIONS.SECOND_FLOOR_Y));
 
     // === Helper: register a component group as a "highlight target" ===
-    const registerComponent = (key: string, group: THREE.Group | THREE.Mesh) => {
+    const registerComponent = (
+      key: string,
+      group: THREE.Group | THREE.Mesh,
+      componentType: string,
+      label: string
+    ) => {
       group.name = key;
+      const meta: InteractiveMeta = {
+        componentId: key,
+        componentType,
+        label,
+        interactive: true,
+      };
+      group.userData = { ...group.userData, ...meta };
+      interactiveMeshesRef.current.push(group);
       // Tag halo planes so they don't get re-coloured
       group.traverse((c) => {
         const m = c as THREE.Mesh;
@@ -519,60 +606,96 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
 
     // === Heat pump (outside, left of villa) ===
     const heatpumpGroup = buildHeatPump();
-    heatpumpGroup.position.set(-3.8, 0.5, 1.5);
-    heatpumpGroup.rotation.y = Math.PI / 6;
-    registerComponent("heatpump", heatpumpGroup);
+    const heatpumpPlacement = getScenePlacement("heatpump", SCENE_POSITIONS.HEATPUMP, Math.PI / 6);
+    heatpumpGroup.position.copy(heatpumpPlacement.position);
+    heatpumpGroup.rotation.copy(heatpumpPlacement.rotation);
+    heatpumpGroup.visible = heatpumpPlacement.visible;
+    registerComponent("heatpump", heatpumpGroup, "HEAT_PUMP", "Isı Pompası");
 
     // === AC indoor units (3 wall-mounted) ===
     const acGroup = new THREE.Group();
-    const acConfigs: { pos: [number, number, number]; rot: number }[] = [
-      { pos: [-1.8, 4.7, 1.95], rot: 0 },
-      { pos: [1.8, 4.7, 1.95], rot: 0 },
-      { pos: [0, 4.7, -1.95], rot: Math.PI },
+    const acConfigs: { pos: THREE.Vector3; rot: number }[] = [
+      { pos: SCENE_POSITIONS.AC_UNIT_SALON, rot: 0 },
+      { pos: SCENE_POSITIONS.AC_UNIT_BEDROOM_1, rot: 0 },
+      { pos: SCENE_POSITIONS.AC_UNIT_BEDROOM_2, rot: Math.PI },
     ];
     acConfigs.forEach((c) => {
       const unit = buildACIndoor();
-      unit.position.set(...c.pos);
+      unit.position.copy(c.pos);
       unit.rotation.y = c.rot;
       acGroup.add(unit);
     });
-    registerComponent("ac-units", acGroup);
+    const acPlacement = getScenePlacement("ac-units", SCENE_POSITIONS.AC_UNIT_SALON, 0);
+    acGroup.position.copy(acPlacement.position.clone().sub(SCENE_POSITIONS.AC_UNIT_SALON));
+    acGroup.rotation.copy(acPlacement.rotation);
+    acGroup.visible = acPlacement.visible;
+    registerComponent("ac-units", acGroup, "AC_UNIT", "Klima Üniteleri");
 
     // === Fire suppression system (mechanical room) ===
     const fireGroup = buildFireSystem();
-    fireGroup.position.set(2.2, 0, 0.5);
-    registerComponent("fire-system", fireGroup);
+    const firePlacement = getScenePlacement("fire-system", SCENE_POSITIONS.FIRE_SYSTEM, 0);
+    fireGroup.position.copy(firePlacement.position);
+    fireGroup.rotation.copy(firePlacement.rotation);
+    fireGroup.visible = firePlacement.visible;
+    registerComponent("fire-system", fireGroup, "OTHER", "Yangın Sistemi");
 
     // ============================================================
     //  Simple cyan emissive components (existing system items)
     // ============================================================
     const makeEmissive = (
-      key: string, geom: THREE.BufferGeometry, pos: [number, number, number]
+      key: string,
+      geom: THREE.BufferGeometry,
+      fallbackPos: THREE.Vector3,
+      componentType: string,
+      label: string
     ) => {
       const mat = new THREE.MeshStandardMaterial({
         color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 0.25,
         metalness: 0.6, roughness: 0.3, transparent: true, opacity: 0.92,
       });
       const mesh = new THREE.Mesh(geom, mat);
-      mesh.position.set(...pos);
+      const placement = getScenePlacement(key, fallbackPos, 0);
+      mesh.position.copy(placement.position);
       const g = new THREE.Group();
       g.add(mesh);
-      registerComponent(key, g);
+      g.visible = placement.visible;
+      registerComponent(key, g, componentType, label);
     };
 
     // Detailed Viessmann-style boiler (mechanical room, wall-hung)
     const boilerGroup = buildBoiler();
-    boilerGroup.position.set(2.2, 1.4, -1.45);
-    registerComponent("boiler", boilerGroup);
+    const boilerPlacement = getScenePlacement("boiler", SCENE_POSITIONS.BOILER, 0);
+    boilerGroup.position.copy(boilerPlacement.position);
+    boilerGroup.rotation.copy(boilerPlacement.rotation);
+    boilerGroup.visible = boilerPlacement.visible;
+    registerComponent("boiler", boilerGroup, "BOILER", "Kombi");
 
     // Industrial pipe kitbash next to boiler
     const kitbash = buildPipeKitbash();
-    kitbash.position.set(1.0, 1.0, -1.85);
+    kitbash.position.copy(SCENE_POSITIONS.KITBASH);
     villaGroup.add(kitbash);
 
-    makeEmissive("tank", new THREE.CylinderGeometry(0.45, 0.45, 1.6, 24), [1.0, 1.2, -1.2]);
-    makeEmissive("pump", new THREE.SphereGeometry(0.28, 16, 16), [1.6, 0.4, -0.2]);
-    makeEmissive("manifold", new THREE.BoxGeometry(1.6, 0.18, 0.25), [0, 0.3, -1.5]);
+    makeEmissive(
+      "tank",
+      new THREE.CylinderGeometry(0.45, 0.45, 1.6, 24),
+      SCENE_POSITIONS.TANK,
+      "OTHER",
+      "Tampon Tank"
+    );
+    makeEmissive(
+      "pump",
+      new THREE.SphereGeometry(0.28, 16, 16),
+      SCENE_POSITIONS.PUMP,
+      "OTHER",
+      "Pompa"
+    );
+    makeEmissive(
+      "manifold",
+      new THREE.BoxGeometry(1.6, 0.18, 0.25),
+      SCENE_POSITIONS.MANIFOLD,
+      "OTHER",
+      "Kollektör"
+    );
 
     // Underfloor pipe grid
     const underGroup = new THREE.Group();
@@ -580,22 +703,30 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
       color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 0.25,
       metalness: 0.4, roughness: 0.4,
     });
-    for (let x = -2.5; x <= 2.5; x += 0.6) {
+    for (
+      let x = SCENE_POSITIONS.UNDERFLOOR_START_X;
+      x <= SCENE_POSITIONS.UNDERFLOOR_END_X;
+      x += SCENE_POSITIONS.UNDERFLOOR_STEP
+    ) {
       const pipe = new THREE.Mesh(
         new THREE.CylinderGeometry(0.04, 0.04, 3.6, 8), pipeMat.clone()
       );
       pipe.rotation.x = Math.PI / 2;
-      pipe.position.set(x, 0.05, 0);
+      pipe.position.set(
+        snapToGrid(x),
+        SCENE_POSITIONS.UNDERFLOOR_Y + 0.05,
+        0
+      );
       underGroup.add(pipe);
     }
-    registerComponent("underfloor", underGroup);
+    const underPlacement = getScenePlacement("underfloor", v3(0, SCENE_POSITIONS.UNDERFLOOR_Y, 0), 0);
+    underGroup.position.copy(underPlacement.position);
+    underGroup.visible = underPlacement.visible;
+    registerComponent("underfloor", underGroup, "FLOOR_HEATING", "Yerden Isıtma");
 
     // Radiators
     const radGroup = new THREE.Group();
-    const radPositions: [number, number, number][] = [
-      [-2.4, 4.3, 1.85], [2.4, 4.3, 1.85], [0, 4.3, -1.85],
-    ];
-    radPositions.forEach((p) => {
+    SCENE_POSITIONS.RADIATOR_POSITIONS.forEach((p) => {
       const r = new THREE.Mesh(
         new THREE.BoxGeometry(0.9, 0.7, 0.12),
         new THREE.MeshStandardMaterial({
@@ -603,10 +734,13 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
           metalness: 0.5, roughness: 0.3,
         })
       );
-      r.position.set(...p);
+      r.position.copy(p);
       radGroup.add(r);
     });
-    registerComponent("radiators", radGroup);
+    const radPlacement = getScenePlacement("radiators", SCENE_POSITIONS.RADIATOR_POSITIONS[0], 0);
+    radGroup.position.copy(radPlacement.position.clone().sub(SCENE_POSITIONS.RADIATOR_POSITIONS[0]));
+    radGroup.visible = radPlacement.visible;
+    registerComponent("radiators", radGroup, "RADIATOR", "Radyatörler");
 
     scene.add(villaGroup);
 
@@ -641,9 +775,81 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
     let prevX = 0, prevY = 0;
     let yaw = 0.4, pitch = 0.25;
     let radius = 14;
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const zoomTarget = new THREE.Vector3();
+    const zoomOffset = new THREE.Vector3(0, 1, 2);
+    let isZoomed = false;
+    const zoomToComponent = (object: THREE.Object3D) => {
+      const worldPos = new THREE.Vector3();
+      object.getWorldPosition(worldPos);
+      zoomTarget.copy(worldPos);
+      const destination = worldPos.clone().add(zoomOffset);
+      isZoomed = true;
+      gsap.to(camera.position, {
+        x: destination.x,
+        y: destination.y,
+        z: destination.z,
+        duration: 0.8,
+        ease: "power2.inOut",
+      });
+      gsap.to(currentLook, {
+        x: worldPos.x,
+        y: worldPos.y,
+        z: worldPos.z,
+        duration: 0.8,
+        ease: "power2.inOut",
+      });
+    };
+    const resetCamera = () => {
+      isZoomed = false;
+      setSelectedComponentId(null);
+      gsap.to(camera.position, {
+        x: defaultCameraRef.current.position.x,
+        y: defaultCameraRef.current.position.y,
+        z: defaultCameraRef.current.position.z,
+        duration: 0.8,
+        ease: "power2.inOut",
+      });
+      gsap.to(currentLook, {
+        x: defaultCameraRef.current.lookAt.x,
+        y: defaultCameraRef.current.lookAt.y,
+        z: defaultCameraRef.current.lookAt.z,
+        duration: 0.8,
+        ease: "power2.inOut",
+      });
+    };
+    resetCameraRef.current = resetCamera;
     const onDown = (e: PointerEvent) => {
       isDown = true; prevX = e.clientX; prevY = e.clientY;
       renderer.domElement.setPointerCapture(e.pointerId);
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(interactiveMeshesRef.current, true);
+      const hit = hits.find((item) => {
+        let node: THREE.Object3D | null = item.object;
+        while (node) {
+          const data = node.userData as Partial<InteractiveMeta>;
+          if (data.interactive === true) return true;
+          node = node.parent;
+        }
+        return false;
+      });
+      if (hit) {
+        let node: THREE.Object3D | null = hit.object;
+        let componentId: string | undefined;
+        while (node && !componentId) {
+          componentId = (node.userData as Partial<InteractiveMeta>).componentId;
+          node = node.parent;
+        }
+        if (componentId) {
+          setSelectedComponentId(componentId);
+          const target = componentsRef.current.get(componentId);
+          if (target) zoomToComponent(target);
+        }
+      }
     };
     const onUp = (e: PointerEvent) => {
       isDown = false;
@@ -654,6 +860,7 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
       const dx = e.clientX - prevX;
       const dy = e.clientY - prevY;
       prevX = e.clientX; prevY = e.clientY;
+      if (isZoomed) return;
       yaw -= dx * 0.005;
       pitch = Math.max(-0.4, Math.min(1.2, pitch + dy * 0.005));
     };
@@ -680,15 +887,62 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
     ro.observe(mount);
 
     let raf = 0;
-    const defaultLook = new THREE.Vector3(0, 2.5, 0);
+    const originalMaterialState = new WeakMap<
+      THREE.Material,
+      { color?: THREE.Color; emissive?: THREE.Color; wireframe?: boolean }
+    >();
+    let lastBlueprintState = blueprintModeRef.current;
+    const applyBlueprintState = (enabled: boolean) => {
+      scene.traverse((node) => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        materials.forEach((material) => {
+          const materialLike = material as THREE.Material & {
+            color?: THREE.Color;
+            emissive?: THREE.Color;
+            wireframe?: boolean;
+          };
+          if (!originalMaterialState.has(material)) {
+            originalMaterialState.set(material, {
+              color: materialLike.color ? materialLike.color.clone() : undefined,
+              emissive: materialLike.emissive ? materialLike.emissive.clone() : undefined,
+              wireframe: typeof materialLike.wireframe === "boolean" ? materialLike.wireframe : undefined,
+            });
+          }
+          const original = originalMaterialState.get(material);
+          if (!original) return;
+          if (enabled) {
+            if (typeof materialLike.wireframe === "boolean") materialLike.wireframe = true;
+            if (materialLike.color) materialLike.color = new THREE.Color(BLUEPRINT_COLOR);
+            if (materialLike.emissive) materialLike.emissive = new THREE.Color(BLUEPRINT_COLOR);
+          } else {
+            if (typeof materialLike.wireframe === "boolean" && typeof original.wireframe === "boolean") {
+              materialLike.wireframe = original.wireframe;
+            }
+            if (materialLike.color && original.color) materialLike.color = original.color.clone();
+            if (materialLike.emissive && original.emissive) {
+              materialLike.emissive = original.emissive.clone();
+            }
+          }
+          material.needsUpdate = true;
+        });
+      });
+    };
+    applyBlueprintState(lastBlueprintState);
+    const defaultLook = SCENE_POSITIONS.CAMERA_DEFAULT_LOOK_AT.clone();
     const currentLook = defaultLook.clone();
     let currentRadius = radius;
     const animate = () => {
       raf = requestAnimationFrame(animate);
+      if (lastBlueprintState !== blueprintModeRef.current) {
+        lastBlueprintState = blueprintModeRef.current;
+        applyBlueprintState(lastBlueprintState);
+      }
       const effectiveYaw = yaw;
 
       // Lerp lookAt + radius toward focus target (or back to default)
-      const targetLook = focusTargetRef.current ?? defaultLook;
+      const targetLook = isZoomed ? zoomTarget : focusTargetRef.current ?? defaultLook;
       const targetRadius = focusRadiusRef.current ?? radius;
       currentLook.lerp(targetLook, 0.06);
       currentRadius += (targetRadius - currentRadius) * 0.06;
@@ -696,8 +950,25 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
       const cx = Math.sin(effectiveYaw) * Math.cos(pitch) * currentRadius + currentLook.x;
       const cz = Math.cos(effectiveYaw) * Math.cos(pitch) * currentRadius + currentLook.z;
       const cy = Math.sin(pitch) * currentRadius + currentLook.y + 1.5;
-      camera.position.set(cx, cy, cz);
+      if (!isZoomed) {
+        camera.position.set(cx, cy, cz);
+      }
       camera.lookAt(currentLook);
+
+      if (blueprintModeRef.current) {
+        const nextLabels: Record<string, { x: number; y: number }> = {};
+        const currentWidth = renderer.domElement.clientWidth;
+        const currentHeight = renderer.domElement.clientHeight;
+        componentsRef.current.forEach((obj, key) => {
+          const p = new THREE.Vector3();
+          obj.getWorldPosition(p);
+          p.project(camera);
+          const sx = ((p.x + 1) / 2) * currentWidth;
+          const sy = ((-p.y + 1) / 2) * currentHeight;
+          nextLabels[key] = { x: sx, y: sy };
+        });
+        setLabelPositions(nextLabels);
+      }
 
       // Pulse the highlighted component's halo
       componentsRef.current.forEach((obj, key) => {
@@ -729,6 +1000,8 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
       renderer.dispose();
       if (dom.parentNode) dom.parentNode.removeChild(dom);
       componentsRef.current.clear();
+      interactiveMeshesRef.current = [];
+      resetCameraRef.current = null;
     };
   }, []);
 
@@ -747,11 +1020,86 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
       <div className="pointer-events-none absolute bottom-4 right-4 font-display text-[10px] tracking-[0.25em] text-foreground/50 uppercase">
         {t("twin.controls")}
       </div>
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setBlueprintMode((prev) => !prev)}
+          className="rounded-md border border-cyan/40 bg-background/70 px-3 py-1 text-[10px] font-display tracking-[0.2em] uppercase text-cyan"
+        >
+          Kroki Modu
+        </button>
+        {selectedComponentId && (
+          <button
+            type="button"
+            onClick={() => resetCameraRef.current?.()}
+            className="rounded-md border border-amber/60 bg-background/80 px-3 py-1 text-[10px] font-display tracking-[0.2em] uppercase amber-text"
+          >
+            ← Geri
+          </button>
+        )}
+      </div>
       {highlightedKey && (
         <div className="pointer-events-none absolute bottom-4 left-4 font-display text-xs tracking-[0.25em] uppercase amber-text animate-fade-in">
           {t("twin.highlight")}: {highlightedKey}
         </div>
       )}
+      {blueprintMode &&
+        Object.entries(labelPositions).map(([id, pos]) => (
+          <div
+            key={id}
+            className="pointer-events-none absolute text-[10px] font-display tracking-[0.2em] uppercase text-cyan"
+            style={{ transform: `translate(${pos.x}px, ${pos.y}px)` }}
+          >
+            {componentConfigRef.current.get(id)?.label ?? id}
+          </div>
+        ))}
+      <aside
+        className={`absolute top-0 right-0 h-full w-80 bg-background/95 border-l border-cyan/25 p-4 transition-transform duration-300 ${
+          selectedSceneComponent ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {selectedSceneComponent && (
+          <div className="h-full flex flex-col">
+            <button
+              type="button"
+              onClick={() => resetCameraRef.current?.()}
+              className="self-end text-foreground/70 hover:text-cyan"
+              aria-label="Kapat"
+            >
+              X
+            </button>
+            <h3 className="font-display text-xl text-cyan">{selectedSceneComponent.label}</h3>
+            <span className="mt-2 inline-block rounded border border-cyan/40 px-2 py-1 text-[10px] tracking-[0.2em] uppercase text-cyan">
+              {selectedSceneComponent.type}
+            </span>
+            <div className="mt-4 space-y-2 text-sm">
+              <div>Marka: {linkedProduct?.brand ?? "-"}</div>
+              <div className="text-foreground/70">{linkedProduct?.description ?? "Bağlı ürün yok."}</div>
+              <ul className="space-y-1">
+                {(linkedProduct?.specs ?? []).slice(0, 4).map((spec) => (
+                  <li key={spec} className="text-xs text-foreground/80">
+                    • {spec}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mt-auto space-y-2">
+              <a
+                href="#systems"
+                className="block rounded-md border border-cyan/40 px-3 py-2 text-center text-xs uppercase tracking-[0.2em] text-cyan"
+              >
+                Ürün Sayfasına Git
+              </a>
+              <a
+                href="#quote"
+                className="block rounded-md bg-gradient-to-r from-cyan to-cyan-glow px-3 py-2 text-center text-xs uppercase tracking-[0.2em] text-background"
+              >
+                Teklif Al
+              </a>
+            </div>
+          </div>
+        )}
+      </aside>
     </div>
   );
 };

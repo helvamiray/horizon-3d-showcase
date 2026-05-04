@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { Link } from "@tanstack/react-router";
 import { productService, type AdminProduct, type ProductCurrency, type ProductSpec } from "@/lib/adminProductService";
 
 const ADMIN_AUTH_KEY = "vega_admin_authed";
@@ -248,6 +249,9 @@ const AdminProductsPage = () => {
             <button type="button" onClick={logout} className="rounded-md border border-white/20 px-3 py-2 text-sm hover:bg-white/10">
               Logout
             </button>
+            <Link to="/admin/scene" className="rounded-md border border-cyan/30 px-3 py-2 text-sm text-cyan hover:bg-cyan/10">
+              3D Sahne Yönetimi
+            </Link>
           </header>
 
           <section className="p-6 space-y-4">
