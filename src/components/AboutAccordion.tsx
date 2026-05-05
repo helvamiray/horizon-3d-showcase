@@ -97,6 +97,15 @@ function StatChip({ value, suffix = "+", label, color = "#c9a84c" }: StatChipPro
   );
 }
 
+// ── Shared style — must be declared BEFORE ITEMS to avoid TDZ ────────────────
+const bodyStyle: React.CSSProperties = {
+  fontFamily: "var(--font-premium-body)",
+  fontSize: "1rem",
+  lineHeight: 1.8,
+  color: "#475569",
+  margin: 0,
+};
+
 // ── Accordion content ─────────────────────────────────────────────────────────
 const ITEMS = [
   {
@@ -163,14 +172,6 @@ const ITEMS = [
     ),
   },
 ];
-
-const bodyStyle: React.CSSProperties = {
-  fontFamily: "var(--font-premium-body)",
-  fontSize: "1rem",
-  lineHeight: 1.8,
-  color: "#475569",
-  margin: 0,
-};
 
 // ── Main component ────────────────────────────────────────────────────────────
 const AboutAccordion = () => (
