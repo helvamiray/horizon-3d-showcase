@@ -782,7 +782,15 @@ const Villa3D = ({ highlightedKey }: Villa3DProps) => {
     let isZoomed = false;
     const zoomToComponent = (object: THREE.Object3D) => {
       const worldPos = new THREE.Vector3();
-      object.getWorldPosition(worldPos);
+      // Use bounding-box centre so groups whose children carry the positions
+      // (e.g. acGroup at origin with individual units spread around) resolve
+      // to the correct world-space focal point instead of always (0,0,0).
+      const box = new THREE.Box3().setFromObject(object);
+      if (box.isEmpty()) {
+        object.getWorldPosition(worldPos);
+      } else {
+        box.getCenter(worldPos);
+      }
       zoomTarget.copy(worldPos);
       const destination = worldPos.clone().add(zoomOffset);
       isZoomed = true;

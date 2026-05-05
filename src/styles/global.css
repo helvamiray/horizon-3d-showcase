@@ -1,6 +1,13 @@
+/* Google fonts must come first — before any CSS rules */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap");
+
 @import "tailwindcss" source(none);
 @source "..";
 @import "tw-animate-css";
+@import "./design-system.css";
+@import "./gravity.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -181,5 +188,4 @@
   font-family: var(--font-display);
 }
 
-/* Google fonts — Lexend (display) + Rajdhani (sans) */
-@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap");
+/* Fonts and design system are imported at the top of the file */

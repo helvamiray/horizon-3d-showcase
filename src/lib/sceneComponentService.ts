@@ -20,6 +20,8 @@ export interface SceneComponent {
 }
 
 const STORAGE_KEY = "vega_scene_components";
+// Bump this whenever defaults change so stale localStorage is auto-reset.
+const SCHEMA_VERSION = 2;
 
 const defaults: SceneComponent[] = [
   {
@@ -107,20 +109,42 @@ const defaults: SceneComponent[] = [
 
 const isBrowser = () => typeof window !== "undefined";
 
-const cloneDefaults = (): SceneComponent[] => defaults.map((item) => ({ ...item }));
+const cloneDefaults = (): SceneComponent[] =>
+  defaults.map((item) => ({
+    ...item,
+    // Normalise Vector3 defaults → plain objects for clean serialisation
+    position: { x: item.position.x, y: item.position.y, z: item.position.z },
+    rotation: { x: item.rotation.x, y: item.rotation.y, z: item.rotation.z },
+  }));
+
+interface StorageEnvelope {
+  version: number;
+  data: SceneComponent[];
+}
 
 const readRaw = (): SceneComponent[] => {
   if (!isBrowser()) return cloneDefaults();
   const raw = window.localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     const seeded = cloneDefaults();
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ version: SCHEMA_VERSION, data: seeded } satisfies StorageEnvelope)
+    );
     return seeded;
   }
   try {
-    const parsed = JSON.parse(raw) as SceneComponent[];
-    if (!Array.isArray(parsed)) return cloneDefaults();
-    return parsed;
+    const envelope = JSON.parse(raw) as Partial<StorageEnvelope>;
+    // Version mismatch → nuke stale data and re-seed from current defaults
+    if (!Array.isArray(envelope.data) || envelope.version !== SCHEMA_VERSION) {
+      const seeded = cloneDefaults();
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ version: SCHEMA_VERSION, data: seeded } satisfies StorageEnvelope)
+      );
+      return seeded;
+    }
+    return envelope.data;
   } catch {
     return cloneDefaults();
   }
@@ -128,7 +152,10 @@ const readRaw = (): SceneComponent[] => {
 
 const writeRaw = (items: SceneComponent[]) => {
   if (!isBrowser()) return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  window.localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ version: SCHEMA_VERSION, data: items } satisfies StorageEnvelope)
+  );
 };
 
 export const sceneComponentService = {
@@ -154,7 +181,7 @@ export const sceneComponentService = {
     writeRaw(current);
     return next;
   },
-  reset: () => {
+  reset: (): void => {
     writeRaw(cloneDefaults());
   },
 };

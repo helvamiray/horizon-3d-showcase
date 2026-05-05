@@ -1,90 +1,180 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { z } from "zod";
-import { useLanguage } from "@/i18n/LanguageContext";
+import { ArrowRight } from "lucide-react";
+import { useMagneticButton } from "@/hooks/useMagneticButton";
+import { VEGA_CONTACTS } from "@/utils/contacts";
 
-const RECIPIENT = "mirayhelva15@icloud.com";
+const CATEGORIES = [
+  "Klima",
+  "Isı Pompası",
+  "Kazan Dairesi",
+  "Yangın Sistemi",
+  "Fancoil",
+  "Radyatör",
+  "Yerden Isıtma",
+  "Diğer",
+];
 
-const schema = z.object({
-  name: z.string().trim().min(2).max(80),
-  email: z.string().trim().email().max(160),
-  company: z.string().trim().max(120).optional().or(z.literal("")),
-  phone: z.string().trim().max(40).optional().or(z.literal("")),
-  message: z.string().trim().min(10).max(1500),
-});
+interface FormState {
+  name: string;
+  company: string;
+  phone: string;
+  email: string;
+  category: string;
+  message: string;
+}
+
+function FormSuccess() {
+  return (
+    <div className="form-success">
+      <span className="form-success-icon">✉️</span>
+      <h4
+        style={{
+          fontFamily: "var(--font-premium-display)",
+          fontWeight: 800,
+          fontSize: "1.25rem",
+          color: "white",
+          margin: 0,
+        }}
+      >
+        Talebiniz iletildi!
+      </h4>
+      <p
+        style={{
+          fontFamily: "var(--font-premium-body)",
+          color: "rgba(255,255,255,0.6)",
+          margin: 0,
+        }}
+      >
+        En kısa sürede sizinle iletişime geçeceğiz.
+      </p>
+    </div>
+  );
+}
 
 const QuoteForm = () => {
-  const [form, setForm] = useState({ name: "", email: "", company: "", phone: "", message: "" });
-  const [submitting, setSubmitting] = useState(false);
-  const { t } = useLanguage();
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    company: "",
+    phone: "",
+    email: "",
+    category: "",
+    message: "",
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const btnRef = useMagneticButton(0.3);
 
-  const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const update =
+    (field: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = schema.safeParse(form);
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Invalid form");
-      return;
-    }
-    setSubmitting(true);
-    const subject = `VEGA Teklif Talebi — ${parsed.data.name}`;
-    const body = [
-      `Name: ${parsed.data.name}`,
-      `Email: ${parsed.data.email}`,
-      `Company: ${parsed.data.company || "—"}`,
-      `Phone: ${parsed.data.phone || "—"}`,
-      "",
-      "Project details:",
-      parsed.data.message,
-    ].join("\n");
-    const url = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = url;
-    setTimeout(() => {
-      setSubmitting(false);
-      toast.success(t("form.opening"));
-    }, 400);
+  const handleSubmit = () => {
+    if (!form.name.trim() || !form.email.trim()) return;
+
+    const subject = encodeURIComponent(
+      `Teklif Talebi${form.category ? ` — ${form.category}` : ""}${form.company ? ` — ${form.company}` : ""}`
+    );
+    const body = encodeURIComponent(
+      [
+        `Ad Soyad: ${form.name}`,
+        form.company ? `Şirket: ${form.company}` : null,
+        form.phone ? `Telefon: ${form.phone}` : null,
+        `E-posta: ${form.email}`,
+        form.category ? `Kategori: ${form.category}` : null,
+        "",
+        form.message ? `Mesaj:\n${form.message}` : null,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    );
+
+    window.location.href = `mailto:${VEGA_CONTACTS.email}?subject=${subject}&body=${body}`;
+    setSubmitted(true);
   };
 
+  if (submitted) return <FormSuccess />;
+
   return (
-    <form onSubmit={handleSubmit} className="glass-strong rounded-2xl p-6 md:p-8 space-y-4 relative">
-      <div className="absolute -top-3 left-6 px-3 py-0.5 bg-background border border-cyan/40 rounded">
-        <span className="font-display text-[10px] tracking-[0.3em] uppercase text-cyan">{t("form.briefing")}</span>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Input placeholder={t("form.name")} value={form.name} onChange={update("name")} className="bg-input/60 border-cyan/30 focus-visible:ring-cyan h-11" required />
-        <Input type="email" placeholder={t("form.email")} value={form.email} onChange={update("email")} className="bg-input/60 border-cyan/30 focus-visible:ring-cyan h-11" required />
-        <Input placeholder={t("form.company")} value={form.company} onChange={update("company")} className="bg-input/60 border-cyan/30 focus-visible:ring-cyan h-11" />
-        <Input placeholder={t("form.phone")} value={form.phone} onChange={update("phone")} className="bg-input/60 border-cyan/30 focus-visible:ring-cyan h-11" />
-      </div>
-
-      <Textarea
-        placeholder={t("form.message")}
-        value={form.message}
-        onChange={update("message")}
-        rows={5}
-        className="bg-input/60 border-cyan/30 focus-visible:ring-cyan resize-none"
-        required
-      />
-
-      <Button
-        type="submit"
-        disabled={submitting}
-        className="w-full h-12 font-display tracking-[0.25em] uppercase text-sm bg-gradient-to-r from-cyan to-cyan-glow text-primary-foreground hover:opacity-90 transition-all"
-        style={{ boxShadow: "0 0 24px oklch(0.78 0.16 210 / 0.5)" }}
+    <div className="grav-quote-form">
+      <h3
+        style={{
+          fontFamily: "var(--font-premium-display)",
+          fontWeight: 800,
+          fontSize: "1.25rem",
+          color: "white",
+          margin: "0 0 24px",
+        }}
       >
-        {submitting ? t("form.sending") : t("form.submit")}
-      </Button>
+        Teklif İste
+      </h3>
 
-      <p className="text-[11px] text-foreground/50 text-center font-mono">
-        {t("form.secure")}: {RECIPIENT}
-      </p>
-    </form>
+      <div className="grav-form-grid">
+        <input
+          className="grav-form-input"
+          placeholder="Ad Soyad *"
+          value={form.name}
+          onChange={update("name")}
+          required
+          aria-label="Ad Soyad"
+        />
+        <input
+          className="grav-form-input"
+          placeholder="Şirket"
+          value={form.company}
+          onChange={update("company")}
+          aria-label="Şirket"
+        />
+        <input
+          className="grav-form-input"
+          placeholder="Telefon"
+          type="tel"
+          value={form.phone}
+          onChange={update("phone")}
+          aria-label="Telefon"
+        />
+        <input
+          className="grav-form-input"
+          placeholder="E-posta *"
+          type="email"
+          value={form.email}
+          onChange={update("email")}
+          required
+          aria-label="E-posta"
+        />
+        <select
+          className="grav-form-select"
+          value={form.category}
+          onChange={update("category")}
+          aria-label="Sistem kategorisi"
+        >
+          <option value="">Sistem Kategorisi Seçin</option>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <textarea
+          className="grav-form-textarea"
+          placeholder="Projenizi kısaca anlatın..."
+          value={form.message}
+          onChange={update("message")}
+          rows={4}
+          aria-label="Proje açıklaması"
+        />
+      </div>
+
+      <button
+        ref={btnRef}
+        className="btn-submit-magnetic"
+        onClick={handleSubmit}
+        type="button"
+        aria-label="Teklif gönder"
+      >
+        <span>Teklif Gönder</span>
+        <ArrowRight size={16} aria-hidden="true" />
+      </button>
+    </div>
   );
 };
 

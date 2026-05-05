@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UrunlerSlugRouteImport } from './routes/urunler.$slug'
 import { Route as AdminSceneRouteImport } from './routes/admin.scene'
 
 const AdminRoute = AdminRouteImport.update({
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UrunlerSlugRoute = UrunlerSlugRouteImport.update({
+  id: '/urunler/$slug',
+  path: '/urunler/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSceneRoute = AdminSceneRouteImport.update({
   id: '/scene',
   path: '/scene',
@@ -33,29 +39,33 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/scene': typeof AdminSceneRoute
+  '/urunler/$slug': typeof UrunlerSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/scene': typeof AdminSceneRoute
+  '/urunler/$slug': typeof UrunlerSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin/scene': typeof AdminSceneRoute
+  '/urunler/$slug': typeof UrunlerSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/scene'
+  fullPaths: '/' | '/admin' | '/admin/scene' | '/urunler/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/scene'
-  id: '__root__' | '/' | '/admin' | '/admin/scene'
+  to: '/' | '/admin' | '/admin/scene' | '/urunler/$slug'
+  id: '__root__' | '/' | '/admin' | '/admin/scene' | '/urunler/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  UrunlerSlugRoute: typeof UrunlerSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -72,6 +82,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/urunler/$slug': {
+      id: '/urunler/$slug'
+      path: '/urunler/$slug'
+      fullPath: '/urunler/$slug'
+      preLoaderRoute: typeof UrunlerSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/scene': {
@@ -97,6 +114,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  UrunlerSlugRoute: UrunlerSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
