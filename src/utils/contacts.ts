@@ -1,6 +1,6 @@
 export const VEGA_CONTACTS = {
   instagram: "vega.enerji",
-  linkedin: "vegaenerji",
+  linkedin: "vegaiklimlendirme",
   email: "mirayhelva15@icloud.com",
   phone: "+90 212 000 00 00",
   address: "Şişli, İstanbul",

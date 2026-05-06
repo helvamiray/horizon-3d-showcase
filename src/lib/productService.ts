@@ -34,7 +34,6 @@ const toLegacyProduct = (p: AdminProduct): Product => ({
   specs_en: p.specs.map((s) => `${s.key}: ${s.value}`),
   image: p.images[0] ?? "/placeholder.svg",
   video: "/videos/isi_pompasi.mp4",
-  price: toLegacyPrice(p.price, p.currency),
   preview3d: undefined,
 });
 

@@ -45,6 +45,18 @@ export function Navbar() {
     >
       {/* Logo */}
       <Link to="/" className="grav-nav-logo" aria-label="Vega İklimlendirme Ana Sayfa">
+        {/* Blinking status indicator */}
+        <span
+          aria-hidden="true"
+          style={{
+            width: "7px",
+            height: "7px",
+            borderRadius: "50%",
+            background: "var(--cyber-green, #00ff88)",
+            flexShrink: 0,
+            animation: "status-blink 2.2s ease-in-out infinite",
+          }}
+        />
         <svg
           width="32"
           height="32"

@@ -1,4 +1,5 @@
 export type ProductCategory =
+  | "vrf"
   | "isi-pompasi"
   | "kombi"
   | "klima"
@@ -13,79 +14,156 @@ export interface Product {
   name_en: string;
   brand: string;
   category: ProductCategory;
-  /** key of the highlightable component inside the 3D villa */
   componentKey: string;
   description: string;
   description_en: string;
   specs: string[];
   specs_en: string[];
-  /** Image used as poster + cart thumbnail */
   image: string;
-  /** Background video URL for the product card (auto-playing, muted, looped) */
   video: string;
-  /** Indicative price label shown on the card back (TR formatting). */
-  price: string;
-  /** Optional 3D preview kind for the front of the card. */
   preview3d?: "ac" | "heatpump" | "fire-extinguisher";
 }
 
-// All product cards share one fallback video (only one is bundled in /public/videos).
-const FALLBACK_VIDEO = "/videos/isi_pompasi.mp4";
+const FALLBACK_VIDEO  = "/videos/isi_pompasi.mp4";
 const FALLBACK_POSTER = "/placeholder.svg";
 
+/* Real image assets in /public/img/ */
+const IMG = {
+  daikinVrf:       "/img/daikin-vrf.png",
+  mitsubishiWall:  "/img/mitsubishi-wall.png",
+  chiller:         "/img/chiller-unit.png",
+  heatPump:        "/img/heat-pump.png",
+  wiloP:           "/videos/wilo-pump.png",
+  plateEx:         "/img/plate-exchanger.png",
+  fireValve:       "/img/fire-valve.png",
+  smokeEx:         "/img/smoke-exhaust.png",
+  firePump:        "/img/fire-pump.png",
+};
+
+/* Category-specific videos in /public/videos/ */
+const VID = {
+  klima:    "/videos/klima.mp4",
+  heatpump: "/videos/isi_pompasi.mp4",
+  kazan:    "/videos/kazan.mp4",
+  yangin:   "/videos/yangin.mp4",
+  vega:     "/videos/vega_tanitim.mp4",
+};
+
 export const PRODUCTS: Product[] = [
-  {
-    id: "p-heatpump-daikin",
-    name: "Aerona3 R32 10kW Havadan Suya Isı Pompası",
-    name_en: "Aerona3 R32 10kW Air-to-Water Heat Pump",
-    brand: "Grant Engineering",
-    category: "isi-pompasi",
-    componentKey: "heatpump",
-    description:
-      "Isıtma, soğutma ve sıcak kullanım suyu için yüksek verimli inverter ısı pompası.",
-    description_en:
-      "High-efficiency inverter heat pump for heating, cooling and domestic hot water.",
-    specs: ["COP 5.1'e kadar", "R-32 soğutucu akışkan", "10 kW nominal güç"],
-    specs_en: ["COP up to 5.1", "R-32 refrigerant", "10 kW nominal output"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 248.000",
-    preview3d: "heatpump",
-  },
+  /* ── VRF Sistemleri ─────────────────────────────────────────── */
   {
     id: "p-ac-daikin",
-    name: "VRV 5 Multi-Split Klima Sistemi",
-    name_en: "VRV 5 Multi-Split AC System",
+    name: "VRV 5 Çoklu-Split VRF Sistemi",
+    name_en: "VRV 5 Multi-Split VRF System",
     brand: "Daikin",
-    category: "klima",
+    category: "vrf",
     componentKey: "ac-units",
-    description: "Tüm bina iklim kontrolü için değişken soğutucu hacimli sistem.",
-    description_en: "Variable refrigerant volume system for whole-building climate control.",
-    specs: ["Bölgesel soğutma", "Wi-Fi kontrol", "Ultra sessiz"],
-    specs_en: ["Zoned cooling", "Wi-Fi control", "Ultra quiet"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 132.000",
+    description:
+      "Tüm bina iklim kontrolü için değişken soğutucu akışkanlı (VRF) sistem. Yüksek verimli, düşük gürültülü ve bölgesel kontrollü.",
+    description_en:
+      "Variable Refrigerant Flow system for whole-building climate control. High-efficiency, low-noise and zone-controlled.",
+    specs: [
+      "Bölgesel soğutma ve ısıtma",
+      "Wi-Fi + BACnet kontrol",
+      "Ultra sessiz: 48 dB(A)",
+      "R-32 soğutucu akışkan",
+      "8–50 kW kapasite aralığı",
+    ],
+    specs_en: ["Zoned cooling & heating", "Wi-Fi + BACnet control", "Ultra quiet: 48 dB(A)", "R-32 refrigerant", "8–50 kW capacity range"],
+    image: IMG.daikinVrf,
+    video: VID.klima,
     preview3d: "ac",
   },
   {
-    id: "p-fire-tyco",
-    name: "ABC Tipi Kuru Kimyevi Tozlu Yangın Söndürücü 6kg",
-    name_en: "ABC Dry-Powder Fire Extinguisher 6kg",
-    brand: "Tyco",
-    category: "yangin",
-    componentKey: "fire-system",
+    id: "p-vrf-mitsubishi",
+    name: "City Multi R2 VRF Sistemi",
+    name_en: "City Multi R2 VRF System",
+    brand: "Mitsubishi Electric",
+    category: "vrf",
+    componentKey: "ac-units",
     description:
-      "TS EN 3 sertifikalı, A-B-C sınıfı yangınlar için manometreli portatif söndürücü.",
+      "Ticari binalara özel çoklu iç ünite bağlantısı yapabilen yüksek verimli VRF sistemi.",
     description_en:
-      "TS EN 3 certified portable extinguisher with manometer for class A-B-C fires.",
-    specs: ["TS EN 3 sertifikalı", "6 kg ABC tozu", "Duvar aparatı dahil"],
-    specs_en: ["TS EN 3 certified", "6 kg ABC powder", "Wall bracket included"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 1.250",
-    preview3d: "fire-extinguisher",
+      "High-efficiency VRF system for commercial buildings with multiple indoor unit connections.",
+    specs: [
+      "1:8 iç ünite oranı",
+      "COP 4.0'a kadar",
+      "Uzun hat: 165 m",
+      "R-32 / R-410A",
+    ],
+    specs_en: ["1:8 indoor unit ratio", "COP up to 4.0", "Long pipe: 165m", "R-32 / R-410A"],
+    image: IMG.mitsubishiWall,
+    video: VID.klima,
   },
+  /* ── Isı Pompası ─────────────────────────────────────────────── */
+  {
+    id: "p-heatpump-daikin",
+    name: "Altherma 3 R Hava/Su Isı Pompası",
+    name_en: "Altherma 3 R Air-to-Water Heat Pump",
+    brand: "Daikin",
+    category: "isi-pompasi",
+    componentKey: "heatpump",
+    description:
+      "Isıtma, soğutma ve sıcak kullanım suyu için yüksek verimli inverter ısı pompası. A+++ enerji sınıfı.",
+    description_en:
+      "High-efficiency inverter heat pump for heating, cooling and domestic hot water. A+++ energy class.",
+    specs: [
+      "COP 5.1'e kadar",
+      "R-32 soğutucu akışkan",
+      "4–16 kW kapasite aralığı",
+      "A+++ enerji sınıfı",
+      "EHPA sertifikalı",
+    ],
+    specs_en: ["COP up to 5.1", "R-32 refrigerant", "4–16 kW range", "A+++ energy class", "EHPA certified"],
+    image: IMG.heatPump,
+    video: VID.heatpump,
+    preview3d: "heatpump",
+  },
+  {
+    id: "p-heatpump-samsung",
+    name: "EHS Mono Hava/Su Isı Pompası",
+    name_en: "EHS Mono Air-to-Water Heat Pump",
+    brand: "Samsung",
+    category: "isi-pompasi",
+    componentKey: "heatpump",
+    description:
+      "Tek ünite yapısı ile kolay montaj sunan, yerden ısıtma uyumlu hava/su ısı pompası.",
+    description_en:
+      "Easy-install monoblock air-to-water heat pump compatible with underfloor heating.",
+    specs: [
+      "Monoblok yapı",
+      "5–16 kW",
+      "Yerden ısıtma uyumlu",
+      "SmartThings entegrasyonu",
+    ],
+    specs_en: ["Monobloc design", "5–16 kW", "Underfloor compatible", "SmartThings integration"],
+    image: IMG.chiller,
+    video: VID.heatpump,
+  },
+  /* ── Klima ────────────────────────────────────────────────────── */
+  {
+    id: "p-ac-residential",
+    name: "Sensira Plus Inverter Split Klima",
+    name_en: "Sensira Plus Inverter Split AC",
+    brand: "Daikin",
+    category: "klima",
+    componentKey: "ac-units",
+    description:
+      "Konut ve küçük ticari mekânlar için A++ inverter split klima. Wifi kontrol, hava temizleme filtresi.",
+    description_en:
+      "A++ inverter split AC for residential and small commercial use. WiFi control, air purification filter.",
+    specs: [
+      "A++ enerji sınıfı",
+      "2.0–5.0 kW",
+      "Wi-Fi (Daikin Online)",
+      "Streamer hava temizleme",
+    ],
+    specs_en: ["A++ energy class", "2.0–5.0 kW", "Wi-Fi (Daikin Online)", "Streamer air purification"],
+    image: IMG.mitsubishiWall,
+    video: VID.klima,
+    preview3d: "ac",
+  },
+  /* ── Kombi / Kazan ───────────────────────────────────────────── */
   {
     id: "p-boiler-buderus",
     name: "Vitodens 200-W Yoğuşmalı Kombi",
@@ -93,29 +171,86 @@ export const PRODUCTS: Product[] = [
     brand: "Viessmann",
     category: "kombi",
     componentKey: "boiler",
-    description: "Akıllı modülasyonlu duvar tipi yoğuşmalı doğalgaz kombisi.",
-    description_en: "Smart-modulating wall-mounted condensing gas boiler.",
-    specs: ["%109'a kadar verim", "24–34 kW", "Modbus uyumlu"],
-    specs_en: ["Up to 109% efficiency", "24–34 kW", "Modbus compatible"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 89.500",
+    description:
+      "Akıllı modülasyonlu duvar tipi yoğuşmalı doğalgaz kombisi. Modbus ve OpenTherm uyumlu.",
+    description_en:
+      "Smart-modulating wall-mounted condensing gas boiler. Modbus and OpenTherm compatible.",
+    specs: [
+      "%109'a kadar verim",
+      "24–34 kW",
+      "Modbus + OpenTherm",
+      "ErP 2021 uyumlu",
+    ],
+    specs_en: ["Up to 109% efficiency", "24–34 kW", "Modbus + OpenTherm", "ErP 2021 compliant"],
+    image: IMG.plateEx,
+    video: VID.kazan,
   },
   {
-    id: "p-radiator-eca",
-    name: "Panel Radyatör Seri 600",
-    name_en: "Panel Radiator Series 600",
-    brand: "E.C.A",
-    category: "radyator",
-    componentKey: "radiators",
-    description: "Düşük sıcaklık sistemleri için tasarlanmış premium çelik panel radyatörler.",
-    description_en: "Premium steel panel radiators designed for low-temperature systems.",
-    specs: ["EN 442 sertifikalı", "10 yıl garanti", "Çoklu boyut seçeneği"],
-    specs_en: ["EN 442 certified", "10-year warranty", "Multiple size options"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 4.800",
+    id: "p-boiler-industrial",
+    name: "Logano Plus GB225 Endüstriyel Kazan",
+    name_en: "Logano Plus GB225 Industrial Boiler",
+    brand: "Buderus",
+    category: "kombi",
+    componentKey: "boiler",
+    description:
+      "Büyük ölçekli sanayi ve hastane projelerine uygun yüksek kapasiteli yoğuşmalı kazan.",
+    description_en:
+      "High-capacity condensing boiler for large-scale industrial and hospital projects.",
+    specs: [
+      "100–400 kW",
+      "Cascade bağlantı imkânı",
+      "BMS entegrasyonu",
+      "%108 verim",
+    ],
+    specs_en: ["100–400 kW", "Cascade connection", "BMS integration", "108% efficiency"],
+    image: IMG.chiller,
+    video: VID.kazan,
   },
+  /* ── Yangın Sistemleri ───────────────────────────────────────── */
+  {
+    id: "p-fire-tyco",
+    name: "FM-200 Gazlı Yangın Söndürme Sistemi",
+    name_en: "FM-200 Gas Fire Suppression System",
+    brand: "Tyco",
+    category: "yangin",
+    componentKey: "fire-system",
+    description:
+      "Veri merkezi ve sunucu odaları için TS EN 15004 sertifikalı FM-200 (HFC-227ea) gazlı yangın söndürme sistemi.",
+    description_en:
+      "TS EN 15004 certified FM-200 (HFC-227ea) fire suppression for data centres and server rooms.",
+    specs: [
+      "TS EN 15004 sertifikalı",
+      "10 sn boşalma süresi",
+      "Elektronik + pnömatik tetik",
+      "UL/FM onaylı",
+    ],
+    specs_en: ["TS EN 15004 certified", "10s discharge time", "Electronic + pneumatic trigger", "UL/FM approved"],
+    image: IMG.fireValve,
+    video: VID.yangin,
+    preview3d: "fire-extinguisher",
+  },
+  {
+    id: "p-fire-detection",
+    name: "Akıllı Adresli Yangın Alarm Paneli",
+    name_en: "Smart Addressable Fire Alarm Panel",
+    brand: "Esser by Honeywell",
+    category: "yangin",
+    componentKey: "fire-system",
+    description:
+      "EN 54-2/4 sertifikalı, BACnet/IP destekli adresli yangın ihbar santrali.",
+    description_en:
+      "EN 54-2/4 certified addressable fire alarm panel with BACnet/IP support.",
+    specs: [
+      "EN 54-2 / EN 54-4 sertifikalı",
+      "2×127 adres kapasitesi",
+      "BACnet/IP + Modbus",
+      "Grafiksel yazılım desteği",
+    ],
+    specs_en: ["EN 54-2/4 certified", "2×127 address capacity", "BACnet/IP + Modbus", "Graphical software"],
+    image: IMG.smokeEx,
+    video: VID.yangin,
+  },
+  /* ── Tank / Radyatör / Boru ──────────────────────────────────── */
   {
     id: "p-tank-kodsan",
     name: "Paslanmaz Tampon Tank 500L",
@@ -123,75 +258,45 @@ export const PRODUCTS: Product[] = [
     brand: "KODSAN",
     category: "tank",
     componentKey: "tank",
-    description: "Hibrit ısıtma sistemleri için izoleli tampon ve sıcak kullanım suyu tankı.",
-    description_en: "Insulated buffer and DHW tank for hybrid heating systems.",
-    specs: ["AISI 316 iç yüzey", "PU köpük 80mm", "Solar serpantin"],
-    specs_en: ["AISI 316 inner shell", "80mm PU foam", "Solar coil"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 64.200",
+    description:
+      "Hibrit ısıtma sistemleri için izoleli tampon ve sıcak kullanım suyu tankı. AISI 316 iç yüzey.",
+    description_en: "Insulated buffer and DHW tank for hybrid heating systems. AISI 316 inner shell.",
+    specs: ["AISI 316 iç yüzey", "PU köpük 80mm", "Solar serpantin", "100–2000 L seçenek"],
+    specs_en: ["AISI 316 inner", "80mm PU foam", "Solar coil", "100–2000 L options"],
+    image: IMG.firePump,
+    video: VID.kazan,
   },
   {
-    id: "p-pipe-frankische",
-    name: "PEX-A Yerden Isıtma Boru Sistemi",
-    name_en: "PEX-A Underfloor Heating System",
-    brand: "FRANKISCHE",
-    category: "boru",
-    componentKey: "underfloor",
-    description: "Yerden ısıtma devreleri için oksijen bariyerli PEX-A boru sistemi.",
-    description_en: "Oxygen-barrier PEX-A pipe system for underfloor heating circuits.",
-    specs: ["DIN 4726", "Ø16–20 mm", "50 yıl ömür"],
-    specs_en: ["DIN 4726", "Ø16–20 mm", "50-year lifespan"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 28 / m",
-  },
-  {
-    id: "p-pump-lowara",
-    name: "Ecocirc Akıllı Sirkülasyon Pompası",
-    name_en: "Ecocirc Smart Circulation Pump",
-    brand: "LOWARA",
+    id: "p-pump-wilo",
+    name: "Stratos MAXO Akıllı Sirkülasyon Pompası",
+    name_en: "Stratos MAXO Smart Circulation Pump",
+    brand: "Wilo",
     category: "boru",
     componentKey: "pump",
     description:
-      "Hidronik sistemler için otomatik adapte özellikli ErP-A sirkülasyon pompası.",
+      "Wilo-Net bağlantılı, enerji tasarruflu ErP-A sınıfı sirkülasyon pompası.",
     description_en:
-      "ErP-A circulation pump with auto-adapt control for hydronic systems.",
-    specs: ["EEI ≤ 0.20", "PWM kontrol", "Döküm gövde"],
-    specs_en: ["EEI ≤ 0.20", "PWM control", "Cast-iron body"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 18.900",
-  },
-  {
-    id: "p-valve-caleffi",
-    name: "Hidrolik Denge Kabı + Kollektör",
-    name_en: "Hydraulic Separator + Manifold",
-    brand: "CALEFFI",
-    category: "boru",
-    componentKey: "manifold",
-    description: "Dengeli dağıtım için debimetreli pirinç kollektör.",
-    description_en: "Brass manifold with flowmeters for balanced distribution.",
-    specs: ["2–12 çıkışlı", "Hava ve tortu ayırıcı", "İzolasyon kiti"],
-    specs_en: ["2–12 outlets", "Air & dirt separator", "Insulation kit"],
-    image: FALLBACK_POSTER,
-    video: FALLBACK_VIDEO,
-    price: "₺ 22.400",
+      "Wilo-Net connected, energy-saving ErP-A class circulation pump.",
+    specs: ["EEI ≤ 0.20", "Wilo-Net / Modbus", "Otomatik adapt", "Döküm gövde"],
+    specs_en: ["EEI ≤ 0.20", "Wilo-Net / Modbus", "Auto-adapt", "Cast-iron body"],
+    image: IMG.wiloP,
+    video: VID.kazan,
   },
 ];
 
 export const BRANDS = [
-  "Daikin", "Ecodense", "E.C.A", "Buderus", "LOWARA", "ETNA", "DUCA",
-  "KODSAN", "Tanpera", "CALEFFI", "DUYAR", "Honeywell", "Kayse",
-  "FRANKISCHE", "Danfoss", "Wates", "Tyco", "ARMAS",
+  "Daikin", "Mitsubishi Electric", "Viessmann", "Samsung", "Wilo",
+  "Grundfos", "Danfoss", "Buderus", "Tyco", "Honeywell",
+  "E.C.A", "CALEFFI", "FRANKISCHE",
 ];
 
 export const CATEGORY_LABEL: Record<ProductCategory, { tr: string; en: string }> = {
-  "isi-pompasi": { tr: "Isı Pompası", en: "Heat Pump" },
-  "kombi": { tr: "Kombi", en: "Boiler" },
-  "klima": { tr: "Klima", en: "AC" },
-  "radyator": { tr: "Radyatör", en: "Radiator" },
-  "boru": { tr: "Boru / Pompa", en: "Pipe / Pump" },
-  "tank": { tr: "Tank", en: "Tank" },
-  "yangin": { tr: "Yangın Sistemi", en: "Fire System" },
+  "vrf":        { tr: "VRF Sistemleri", en: "VRF Systems"   },
+  "isi-pompasi":{ tr: "Isı Pompası",    en: "Heat Pump"      },
+  "kombi":      { tr: "Kazan / Kombi",  en: "Boiler"         },
+  "klima":      { tr: "Klima",          en: "AC"             },
+  "radyator":   { tr: "Radyatör",       en: "Radiator"       },
+  "boru":       { tr: "Boru / Pompa",   en: "Pipe / Pump"    },
+  "tank":       { tr: "Tank",           en: "Tank"           },
+  "yangin":     { tr: "Yangın Sistemi", en: "Fire System"    },
 };

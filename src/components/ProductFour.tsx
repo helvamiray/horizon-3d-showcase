@@ -1,274 +1,300 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight } from "lucide-react";
 import { animate, spring } from "animejs";
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface CardDef {
-  slug: string;       // product ID in data layer
-  emoji: string;
+  slug: string;
+  serialCode: string;
   label: string;
+  category: string;
+  spec: string;
   description: string;
   accentColor: string;
 }
 
-const FOUR_CARDS: CardDef[] = [
+const CARDS: CardDef[] = [
   {
     slug: "p-ac-daikin",
-    emoji: "❄️",
-    label: "Klima",
-    description:
-      "Daikin VRF ve inverter split sistemler. Bölgesel soğutma, Wi-Fi kontrol, A+++ enerji sınıfı.",
-    accentColor: "#00d4ff",
+    serialCode: "VGA-AC-2401",
+    label: "Klima Sistemleri",
+    category: "COOLING / AIR-CON",
+    spec: "A+++ · 5–28 kW",
+    description: "Inverter ve VRF teknolojisiyle bireysel, ofis ve endüstriyel mekânlar için hassas iklim yönetimi.",
+    accentColor: "var(--electric-cyan, #00f0ff)",
   },
   {
     slug: "p-boiler-buderus",
-    emoji: "🔥",
-    label: "Kazan",
-    description:
-      "Viessmann yoğuşmalı kombiler. %109'a kadar verim, Modbus uyumlu akıllı modülasyon.",
-    accentColor: "#ffbf00",
+    serialCode: "VGA-KZ-2401",
+    label: "Kazan Sistemleri",
+    category: "HEATING / BOILER",
+    spec: "A+ · 24–500 kW",
+    description: "Yoğuşmalı ve döküm kazanlar. Konut, hastane ve sanayi tesislerinde düşük emisyon, yüksek verim.",
+    accentColor: "var(--gold, #c9a84c)",
   },
   {
     slug: "p-heatpump-daikin",
-    emoji: "♨️",
+    serialCode: "VGA-IP-2401",
     label: "Isı Pompası",
-    description:
-      "Grant Aerona3 R-32 havadan suya ısı pompaları. COP 5.1, A+++ sınıfı, ısıtma ve soğutma.",
-    accentColor: "#00ff88",
+    category: "HEAT PUMP / HVA",
+    spec: "A+++ · COP 4.8",
+    description: "Toprak ve hava kaynaklı ısı pompalarıyla hem ısıtma hem soğutma; yüzde 70'e varan enerji tasarrufu.",
+    accentColor: "#e07840",
   },
   {
     slug: "p-fire-tyco",
-    emoji: "🚒",
-    label: "Yangın Sistemi",
-    description:
-      "Tyco onaylı ABC tozlu söndürücüler. TS EN 3 sertifikalı, her sınıf yangına uygun.",
-    accentColor: "#ff4040",
+    serialCode: "VGA-YG-2401",
+    label: "Yangın Sistemleri",
+    category: "FIRE SAFETY / FM",
+    spec: "EN 54 · FM200",
+    description: "Dedektörden söndürme sistemine kadar bütünleşik yangın güvenliği. ISO 9001 sertifikalı kurulum.",
+    accentColor: "var(--alert-red, #ff3b55)",
   },
 ];
 
-const openProduct = (slug: string) =>
-  window.open(`/urunler/${slug}`, "_blank", "noopener,noreferrer");
-
 const ProductFour = () => {
-  const gridRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const cardsRef   = useRef<HTMLDivElement>(null);
 
-  // GSAP stagger reveal on scroll
   useEffect(() => {
-    const motionOk = !window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (!motionOk || !gridRef.current) return;
+    const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!motionOk || !cardsRef.current) return;
 
     const ctx = gsap.context(() => {
+      const cards = cardsRef.current!.querySelectorAll<HTMLElement>(".pf-card");
+
       gsap.fromTo(
-        gridRef.current!.querySelectorAll(".pf-card"),
+        cards,
         { y: 60, opacity: 0 },
         {
           y: 0,
           opacity: 1,
-          duration: 0.8,
+          duration: 0.7,
           stagger: 0.12,
           ease: "power3.out",
           scrollTrigger: {
-            trigger: gridRef.current,
+            trigger: cardsRef.current,
             start: "top 78%",
-            once: true,
           },
         }
       );
-    }, gridRef);
+    });
 
     return () => ctx.revert();
   }, []);
 
-  const handleCardEnter = (e: React.MouseEvent<HTMLDivElement>) => {
-    const motionOk = !window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (!motionOk) return;
-    animate(e.currentTarget, {
-      translateY: -10,
-      duration: 360,
-      ease: spring({ stiffness: 300, damping: 22 }),
-    });
+  const handleMouseEnter = (el: HTMLElement) => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    animate(el, { translateY: -6, scale: 1.015, easing: spring({ stiffness: 80, damping: 14 }) });
   };
 
-  const handleCardLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    const motionOk = !window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (!motionOk) return;
-    animate(e.currentTarget, {
-      translateY: 0,
-      duration: 440,
-      ease: spring({ stiffness: 280, damping: 26 }),
-    });
+  const handleMouseLeave = (el: HTMLElement) => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    animate(el, { translateY: 0, scale: 1, easing: spring({ stiffness: 80, damping: 12 }) });
   };
 
   return (
     <section
       id="urunler"
+      ref={sectionRef}
       style={{
-        background: "#ffffff",
-        padding: "5rem 1.5rem",
+        background: "var(--terminal-bg, #020608)",
+        padding: "clamp(60px, 10vw, 120px) clamp(20px, 6vw, 80px)",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        {/* Section header */}
-        <div
-          style={{ marginBottom: "3rem", textAlign: "center" }}
-          data-reveal
-        >
-          <span
-            style={{
-              fontFamily: "var(--font-premium-mono)",
-              fontSize: "11px",
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              color: "#94a3b8",
-              display: "block",
-              marginBottom: "12px",
-            }}
-          >
-            Çözümlerimiz
-          </span>
-          <h2
-            style={{
-              fontFamily: "var(--font-premium-display)",
-              fontWeight: 800,
-              fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)",
-              color: "var(--navy-primary, #0a1628)",
-              letterSpacing: "-0.025em",
-              margin: 0,
-              lineHeight: 1.15,
-            }}
-          >
-            Hangi Sistem Sizin İçin?
-          </h2>
-        </div>
+      {/* Decorative horizontal rule */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background: "linear-gradient(90deg, transparent, var(--electric-cyan, #00f0ff) 50%, transparent)",
+          opacity: 0.3,
+        }}
+      />
 
-        {/* 4-card grid */}
-        <div
-          ref={gridRef}
+      {/* Section header */}
+      <div style={{ maxWidth: 1400, margin: "0 auto 3.5rem" }}>
+        <p
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: "1.5rem",
+            fontFamily: "var(--font-premium-mono)",
+            fontSize: "11px",
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            color: "var(--electric-cyan, #00f0ff)",
+            margin: "0 0 0.75rem",
           }}
-          className="pf-grid"
         >
-          {FOUR_CARDS.map((card) => (
-            <div
-              key={card.slug}
-              className="pf-card"
-              onMouseEnter={handleCardEnter}
-              onMouseLeave={handleCardLeave}
-              style={{
-                background: "#ffffff",
-                border: "1px solid rgba(10,22,40,0.08)",
-                borderRadius: "20px",
-                padding: "2.25rem 1.75rem",
-                display: "flex",
-                flexDirection: "column",
-                gap: "1rem",
-                cursor: "pointer",
-                position: "relative",
-                overflow: "hidden",
-                willChange: "transform",
-              }}
-              onClick={() => openProduct(card.slug)}
-            >
-              {/* Top accent bar */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: "3px",
-                  background: card.accentColor,
-                  borderRadius: "20px 20px 0 0",
-                }}
-              />
-
-              {/* Emoji icon */}
-              <span
-                style={{ fontSize: "3rem", lineHeight: 1, display: "block" }}
-                aria-hidden="true"
-              >
-                {card.emoji}
-              </span>
-
-              {/* Title */}
-              <h3
-                style={{
-                  fontFamily: "var(--font-premium-display)",
-                  fontWeight: 800,
-                  fontSize: "1.375rem",
-                  color: "var(--navy-primary, #0a1628)",
-                  margin: 0,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                {card.label}
-              </h3>
-
-              {/* Description */}
-              <p
-                style={{
-                  fontFamily: "var(--font-premium-body)",
-                  fontSize: "0.875rem",
-                  lineHeight: 1.65,
-                  color: "#64748b",
-                  margin: 0,
-                  flexGrow: 1,
-                }}
-              >
-                {card.description}
-              </p>
-
-              {/* CTA */}
-              <button
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "none",
-                  border: "none",
-                  padding: "8px 0",
-                  fontFamily: "var(--font-premium-display)",
-                  fontWeight: 700,
-                  fontSize: "0.8125rem",
-                  color: card.accentColor,
-                  cursor: "pointer",
-                  letterSpacing: "0.02em",
-                  transition: "gap 200ms ease",
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openProduct(card.slug);
-                }}
-                aria-label={`${card.label} — Detayları Gör`}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.gap = "10px")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.gap = "6px")}
-              >
-                Detayları Gör
-                <ArrowRight size={14} aria-hidden="true" />
-              </button>
-            </div>
-          ))}
-        </div>
+          // 04.PRODUCTS
+        </p>
+        <h2
+          style={{
+            fontFamily: "var(--font-premium-display)",
+            fontSize: "clamp(28px, 3.5vw, 52px)",
+            fontWeight: 800,
+            color: "#ffffff",
+            letterSpacing: "-0.02em",
+            margin: 0,
+          }}
+        >
+          Çözümlerimiz
+        </h2>
       </div>
 
-      {/* Responsive grid */}
-      <style>{`
-        @media (max-width: 1024px) { .pf-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-        @media (max-width: 600px)  { .pf-grid { grid-template-columns: 1fr !important; } }
-      `}</style>
+      {/* Cards grid */}
+      <div
+        ref={cardsRef}
+        className="pf-grid"
+        style={{
+          maxWidth: 1400,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+          gap: "1.5rem",
+        }}
+      >
+        {CARDS.map((card) => (
+          <div
+            key={card.slug}
+            className="pf-card"
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLElement;
+              handleMouseEnter(el);
+              el.style.borderColor = "var(--terminal-border-hover, rgba(0,240,255,0.35))";
+              el.style.boxShadow   = "0 0 32px rgba(0,240,255,0.08)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLElement;
+              handleMouseLeave(el);
+              el.style.borderColor = "var(--terminal-border, rgba(0,240,255,0.12))";
+              el.style.boxShadow   = "none";
+            }}
+            onClick={() => window.open(`/urunler/${card.slug}`, "_blank", "noopener,noreferrer")}
+            style={{
+              position: "relative",
+              background: "var(--terminal-surface, #080d14)",
+              border: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
+              borderLeft: `3px solid ${card.accentColor}`,
+              borderRadius: "8px",
+              padding: "1.75rem 1.75rem 1.5rem",
+              cursor: "pointer",
+              transition: "border-color 240ms ease, box-shadow 240ms ease",
+              overflow: "hidden",
+            }}
+          >
+            {/* Serial number label */}
+            <span
+              style={{
+                display: "block",
+                fontFamily: "var(--font-premium-mono)",
+                fontSize: "9px",
+                letterSpacing: "0.2em",
+                color: "rgba(255,255,255,0.25)",
+                marginBottom: "1rem",
+              }}
+            >
+              SN: {card.serialCode}
+            </span>
+
+            {/* Category badge */}
+            <span
+              style={{
+                display: "inline-block",
+                fontFamily: "var(--font-premium-mono)",
+                fontSize: "9px",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: card.accentColor,
+                border: `1px solid ${card.accentColor}`,
+                borderRadius: "2px",
+                padding: "2px 8px",
+                marginBottom: "1rem",
+                opacity: 0.85,
+              }}
+            >
+              {card.category}
+            </span>
+
+            {/* Title */}
+            <h3
+              style={{
+                fontFamily: "var(--font-premium-display)",
+                fontSize: "clamp(18px, 1.8vw, 22px)",
+                fontWeight: 700,
+                color: "#ffffff",
+                margin: "0 0 0.6rem",
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {card.label}
+            </h3>
+
+            {/* Spec line */}
+            <p
+              style={{
+                fontFamily: "var(--font-premium-mono)",
+                fontSize: "11px",
+                color: card.accentColor,
+                margin: "0 0 0.75rem",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {card.spec}
+            </p>
+
+            {/* Description */}
+            <p
+              style={{
+                fontFamily: "var(--font-premium-body)",
+                fontSize: "13px",
+                color: "rgba(255,255,255,0.5)",
+                lineHeight: 1.7,
+                margin: "0 0 1.5rem",
+              }}
+            >
+              {card.description}
+            </p>
+
+            {/* CTA */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`/urunler/${card.slug}`, "_blank", "noopener,noreferrer");
+              }}
+              style={{
+                fontFamily: "var(--font-premium-mono)",
+                fontSize: "10px",
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: card.accentColor,
+                background: "transparent",
+                border: `1px solid ${card.accentColor}`,
+                borderRadius: "3px",
+                padding: "7px 18px",
+                cursor: "pointer",
+                transition: "background 200ms ease, color 200ms ease",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = card.accentColor;
+                (e.currentTarget as HTMLButtonElement).style.color = "#020608";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.color = card.accentColor;
+              }}
+            >
+              → Detayları Gör
+            </button>
+          </div>
+        ))}
+      </div>
     </section>
   );
 };

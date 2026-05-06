@@ -1,46 +1,41 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronDown } from "lucide-react";
 
+gsap.registerPlugin(ScrollTrigger);
+
 interface Props {
-  /** ID of the next section to scroll to */
   nextSectionId?: string;
 }
 
 const HeroVideo = ({ nextSectionId = "urunler" }: Props) => {
-  const textRef = useRef<HTMLDivElement>(null);
-  const arrowRef = useRef<HTMLButtonElement>(null);
+  const sectionRef   = useRef<HTMLElement>(null);
+  const arrowRef     = useRef<HTMLButtonElement>(null);
+  const vegaGhostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const motionOk = !window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+    const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ctx = gsap.context(() => {
-      if (motionOk && textRef.current) {
-        gsap.fromTo(
-          textRef.current.querySelectorAll("[data-hero-anim]"),
-          { y: 48, opacity: 0 },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 1.1,
-            stagger: 0.15,
-            ease: "power3.out",
-            delay: 0.4,
-          }
-        );
-      }
-
-      // Arrow bob animation
+      // Arrow bob
       if (motionOk && arrowRef.current) {
         gsap.to(arrowRef.current, {
-          y: 10,
-          repeat: -1,
-          yoyo: true,
-          duration: 1.4,
-          ease: "sine.inOut",
-          delay: 1.5,
+          y: 10, repeat: -1, yoyo: true, duration: 1.4, ease: "sine.inOut", delay: 0.8,
+        });
+      }
+
+      // VEGA ghost parallax
+      if (motionOk && vegaGhostRef.current && sectionRef.current) {
+        gsap.to(vegaGhostRef.current, {
+          y: "-40vh",
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.2,
+          },
         });
       }
     });
@@ -50,15 +45,13 @@ const HeroVideo = ({ nextSectionId = "urunler" }: Props) => {
 
   const scrollToNext = () => {
     const el = document.getElementById(nextSectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    } else {
-      window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
-    }
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+    else window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
   };
 
   return (
     <section
+      ref={sectionRef}
       style={{
         position: "relative",
         width: "100vw",
@@ -69,138 +62,91 @@ const HeroVideo = ({ nextSectionId = "urunler" }: Props) => {
         justifyContent: "center",
         background: "#000",
       }}
-      aria-label="VEGA Enerji Hero"
+      aria-label="VEGA İklimlendirme Hero"
     >
-      {/* Background video */}
+      {/* Background video — full screen, no text */}
       <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
+        autoPlay muted loop playsInline preload="auto"
         src="/videos/vega_tanitim.mp4"
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-        }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
       />
 
-      {/* Dark overlay */}
+      {/* Very light bottom gradient so next section has a clean entry */}
       <div
         aria-hidden="true"
         style={{
           position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(to bottom, rgba(5,13,26,0.45) 0%, rgba(5,13,26,0.62) 60%, rgba(5,13,26,0.88) 100%)",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "30%",
+          background: "linear-gradient(to bottom, transparent, rgba(2,6,8,0.9))",
+          pointerEvents: "none",
         }}
       />
 
-      {/* Text content — brand felt through design, not large text */}
+      {/* Ghost VEGA parallax watermark */}
       <div
-        ref={textRef}
+        ref={vegaGhostRef}
+        aria-hidden="true"
         style={{
-          position: "relative",
+          position: "absolute",
+          bottom: "-5%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          fontFamily: "var(--font-premium-display)",
+          fontSize: "clamp(140px, 24vw, 360px)",
+          fontWeight: 900,
+          color: "transparent",
+          WebkitTextStroke: "1px rgba(0,240,255,0.07)",
+          letterSpacing: "-0.05em",
+          lineHeight: 1,
+          userSelect: "none",
+          pointerEvents: "none",
+          whiteSpace: "nowrap",
+          zIndex: 2,
+        }}
+      >
+        VEGA
+      </div>
+
+      {/* Tagline — bottom-left overlay, subtle but legible */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "4.5rem",
+          left: "clamp(24px, 5vw, 80px)",
           zIndex: 10,
-          textAlign: "center",
-          padding: "0 1.5rem",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
-          gap: "1.25rem",
-          className: "hero-text-float",
-        } as React.CSSProperties}
-        className="hero-text-float"
+          gap: "6px",
+        }}
       >
-        {/* Small brand moniker */}
         <span
-          data-hero-anim
           style={{
-            fontFamily: "var(--font-premium-mono, 'JetBrains Mono', monospace)",
-            fontSize: "clamp(9px, 1.1vw, 12px)",
-            letterSpacing: "0.32em",
+            fontFamily: "var(--font-premium-mono)",
+            fontSize: "clamp(9px, 1vw, 11px)",
+            letterSpacing: "0.3em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.38)",
-            display: "block",
+            color: "var(--electric-cyan, #00f0ff)",
+            opacity: 0.7,
           }}
         >
-          Vega İklimlendirme · Est. 2012
+          // VEGA İKLİMLENDİRME
         </span>
-
-        {/* Primary tagline — the headline */}
-        <h1
-          data-hero-anim
+        <span
           style={{
-            fontFamily: "var(--font-premium-display, 'Poppins', sans-serif)",
-            fontSize: "clamp(32px, 5.5vw, 80px)",
-            fontWeight: 800,
-            color: "#ffffff",
-            letterSpacing: "-0.03em",
+            fontFamily: "var(--font-premium-display)",
+            fontSize: "clamp(18px, 2.4vw, 30px)",
+            fontWeight: 700,
+            color: "rgba(255,255,255,0.92)",
+            letterSpacing: "-0.01em",
             lineHeight: 1.1,
-            margin: 0,
-            maxWidth: "900px",
+            textShadow: "0 2px 20px rgba(0,0,0,0.7)",
           }}
         >
-          Geleceğin İklimlendirme
-          <br />
-          <span style={{ color: "var(--gold, #c9a84c)" }}>Teknolojileri</span>
-        </h1>
-
-        {/* Product categories */}
-        <p
-          data-hero-anim
-          style={{
-            fontFamily: "var(--font-premium-body, 'Inter', sans-serif)",
-            fontSize: "clamp(13px, 1.5vw, 17px)",
-            color: "rgba(255,255,255,0.5)",
-            letterSpacing: "0.08em",
-            margin: 0,
-          }}
-        >
-          Isı Pompası · Klima · Kazan · Yangın Sistemleri
-        </p>
-
-        {/* CTA strip */}
-        <div data-hero-anim style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
-          <button
-            onClick={() => document.getElementById("urunler")?.scrollIntoView({ behavior: "smooth" })}
-            style={{
-              background: "var(--gold, #c9a84c)",
-              color: "var(--navy-primary, #0a1628)",
-              border: "none",
-              padding: "12px 28px",
-              borderRadius: "100px",
-              fontFamily: "var(--font-premium-display)",
-              fontWeight: 700,
-              fontSize: "0.875rem",
-              cursor: "pointer",
-              letterSpacing: "0.01em",
-            }}
-          >
-            Ürünleri Keşfet
-          </button>
-          <button
-            onClick={() => document.getElementById("iletisim")?.scrollIntoView({ behavior: "smooth" })}
-            style={{
-              background: "rgba(255,255,255,0.1)",
-              backdropFilter: "blur(8px)",
-              color: "white",
-              border: "1px solid rgba(255,255,255,0.2)",
-              padding: "12px 28px",
-              borderRadius: "100px",
-              fontFamily: "var(--font-premium-display)",
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              cursor: "pointer",
-            }}
-          >
-            Teklif Al
-          </button>
-        </div>
+          Endüstriyel ve Kurumsal Çözümler
+        </span>
       </div>
 
       {/* Scroll arrow */}
@@ -214,29 +160,28 @@ const HeroVideo = ({ nextSectionId = "urunler" }: Props) => {
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 10,
-          background: "rgba(255,255,255,0.1)",
-          backdropFilter: "blur(8px)",
-          border: "1px solid rgba(255,255,255,0.22)",
-          borderRadius: "50%",
-          width: "48px",
-          height: "48px",
+          background: "rgba(0,240,255,0.07)",
+          border: "1px solid rgba(0,240,255,0.2)",
+          borderRadius: "4px",
+          width: "44px",
+          height: "44px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "white",
+          color: "rgba(0,240,255,0.7)",
           cursor: "pointer",
-          transition: "background 200ms ease",
+          transition: "background 200ms ease, box-shadow 200ms ease",
         }}
-        onMouseEnter={(e) =>
-          ((e.currentTarget as HTMLButtonElement).style.background =
-            "rgba(255,255,255,0.18)")
-        }
-        onMouseLeave={(e) =>
-          ((e.currentTarget as HTMLButtonElement).style.background =
-            "rgba(255,255,255,0.10)")
-        }
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,240,255,0.16)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 18px rgba(0,240,255,0.3)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,240,255,0.07)";
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+        }}
       >
-        <ChevronDown size={22} />
+        <ChevronDown size={20} />
       </button>
     </section>
   );
