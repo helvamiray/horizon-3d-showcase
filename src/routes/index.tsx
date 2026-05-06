@@ -1,15 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import { Navbar }          from "@/components/Navbar";
-import HeroVideo           from "@/components/HeroVideo";
-import ProductFour         from "@/components/ProductFour";
-import AboutAccordion      from "@/components/AboutAccordion";
-import FlashlightOverlay   from "@/components/FlashlightOverlay";
-import TurkeyMapPulse      from "@/components/TurkeyMapPulse";
-import QuoteSimple         from "@/components/QuoteSimple";
+import { Navbar }           from "@/components/Navbar";
+import HeroVideo            from "@/components/HeroVideo";
+import ProductSlider        from "@/components/ProductSlider";
+import ProductEngine        from "@/components/ProductEngine";
+import AnimatedStats        from "@/components/AnimatedStats";
+import MissionVision        from "@/components/MissionVision";
+import SolutionPartners     from "@/components/SolutionPartners";
+import IndustrialShowcase   from "@/components/IndustrialShowcase";
+import FlashlightOverlay    from "@/components/FlashlightOverlay";
+import TurkeyMapSimple      from "@/components/TurkeyMapSimple";
+import QuoteSimple          from "@/components/QuoteSimple";
 
 import { initSmoothScroll, destroySmoothScroll } from "@/lib/smoothScroll";
 import { initScrollReveal }                      from "@/lib/scrollReveal";
@@ -21,36 +25,10 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-
 function Index() {
-  const thermalRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     initSmoothScroll();
     initScrollReveal();
-
-    // HVAC thermal ambient: cool blue → warm amber as user scrolls product section
-    const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (motionOk && thermalRef.current) {
-      const proxy = { progress: 0 };
-      ScrollTrigger.create({
-        trigger: "#urunler",
-        start: "top 60%",
-        end: "bottom 40%",
-        scrub: 1.5,
-        onUpdate: (self) => {
-          proxy.progress = self.progress;
-          if (!thermalRef.current) return;
-          // Interpolate: 0 = cold blue tint | 1 = warm amber tint
-          const cold = { r: 219, g: 244, b: 255, a: 0.45 };
-          const warm = { r: 255, g: 243, b: 219, a: 0.45 };
-          const r = Math.round(cold.r + (warm.r - cold.r) * self.progress);
-          const g = Math.round(cold.g + (warm.g - cold.g) * self.progress);
-          const b = Math.round(cold.b + (warm.b - cold.b) * self.progress);
-          thermalRef.current.style.background = `rgba(${r},${g},${b},${cold.a})`;
-        },
-      });
-    }
 
     return () => {
       destroySmoothScroll();
@@ -62,113 +40,83 @@ function Index() {
     <div
       style={{
         fontFamily: "var(--font-premium-body, 'Inter', sans-serif)",
-        background: "#ffffff",
+        background: "var(--terminal-bg, #020608)",
         overflowX: "hidden",
       }}
     >
-      {/* Cursor flashlight — sets CSS vars, no DOM overhead */}
       <FlashlightOverlay />
-
-      {/* ── Transparent → solid Navbar ── */}
       <Navbar />
 
-      {/* ── PHASE 1: Full-screen video hero ── */}
+      {/* 01 · Full-screen video hero */}
       <HeroVideo nextSectionId="urunler" />
 
-      {/* ── PHASE 2: 4-card product grid + HVAC thermal ambient ── */}
-      <div style={{ position: "relative", overflow: "hidden" }}>
-        {/* Thermal colour overlay — transitions cool→warm on scroll */}
-        <div
-          ref={thermalRef}
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(219,244,255,0.45)",
-            pointerEvents: "none",
-            zIndex: 0,
-            transition: "background 80ms linear",
-          }}
-        />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <ProductFour />
-        </div>
-      </div>
+      {/* 02 · Animated stats bar */}
+      <AnimatedStats />
 
-      {/* ── PHASE 3: About (accordion + live counters) ── */}
-      <AboutAccordion />
+      {/* 03 · Infinite product slider with modal */}
+      <ProductSlider />
 
-      {/* ── PHASE 4: Turkey map — project locations ── */}
+      {/* 04 · Product catalogue — search + filter grid */}
+      <ProductEngine />
+
+      {/* 05 · About — Mission & Vision with Framer Motion reading effect */}
+      <MissionVision />
+
+      {/* 06 · Industrial & Corporate showcase headlines */}
+      <IndustrialShowcase />
+
+      {/* 07 · Solution partners */}
+      <SolutionPartners />
+
+      {/* 07 · Project map */}
       <section
         id="projeler"
         style={{
-          background: "#0a1628",
-          padding: "5rem 1.5rem",
+          background: "var(--terminal-surface2, #0d1520)",
+          padding: "clamp(60px,10vw,100px) clamp(20px,6vw,80px)",
+          borderTop:    "1px solid var(--terminal-border, rgba(0,240,255,0.1))",
+          borderBottom: "1px solid var(--terminal-border, rgba(0,240,255,0.1))",
         }}
       >
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <div
-            style={{ textAlign: "center", marginBottom: "2.5rem" }}
-            data-reveal
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-premium-mono)",
-                fontSize: "11px",
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.35)",
-                display: "block",
-                marginBottom: "12px",
-              }}
-            >
-              Türkiye Geneli
-            </span>
-            <h2
-              style={{
-                fontFamily: "var(--font-premium-display)",
-                fontWeight: 800,
-                fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
-                color: "white",
-                letterSpacing: "-0.025em",
-                margin: "0 0 0.75rem",
-              }}
-            >
+        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
+          <div style={{ marginBottom: "2.5rem" }}>
+            <p style={{
+              fontFamily: "var(--font-premium-mono)", fontSize: "11px",
+              letterSpacing: "0.28em", textTransform: "uppercase",
+              color: "var(--electric-cyan, #00f0ff)", margin: "0 0 0.75rem",
+            }}>
+              // 03.PROJECTS
+            </p>
+            <h2 style={{
+              fontFamily: "var(--font-premium-display)", fontWeight: 800,
+              fontSize: "clamp(1.5rem,3vw,2.25rem)", color: "white",
+              letterSpacing: "-0.025em", margin: "0 0 0.5rem",
+            }}>
               Referans Projelerimiz
             </h2>
-            <p
-              style={{
-                fontFamily: "var(--font-premium-body)",
-                fontSize: "0.9375rem",
-                color: "rgba(255,255,255,0.45)",
-                margin: 0,
-              }}
-            >
-              Şehirlerin üzerine gelerek projeyi inceleyin
+            <p style={{
+              fontFamily: "var(--font-premium-mono)", fontSize: "11px",
+              color: "rgba(255,255,255,0.35)", margin: 0, letterSpacing: "0.1em",
+            }}>
+              Türkiye genelinde tamamlanan projeler
             </p>
           </div>
-          <TurkeyMapPulse />
+          <TurkeyMapSimple />
         </div>
       </section>
 
-      {/* ── PHASE 4: Contact form (z-index: 3000) ── */}
+      {/* 08 · Contact form */}
       <QuoteSimple />
 
-      {/* ── Footer + Vega signature ── */}
+      {/* 07 · Footer */}
       <footer
         style={{
-          background: "#050d1a",
+          background: "var(--terminal-bg, #020608)",
           padding: "3rem 1.5rem 2rem",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
         }}
       >
-        <div
-          style={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-          }}
-        >
-          {/* Footer top row — brand + links */}
+        <div style={{ maxWidth: 1400, margin: "0 auto" }}>
           <div
             style={{
               display: "grid",
@@ -181,55 +129,35 @@ function Index() {
           >
             {/* Brand */}
             <div>
-              <p
-                style={{
-                  fontFamily: "var(--font-premium-display)",
-                  fontWeight: 800,
-                  fontSize: "1.25rem",
-                  color: "white",
-                  margin: "0 0 6px",
-                  letterSpacing: "-0.01em",
-                }}
-              >
+              <p style={{
+                fontFamily: "var(--font-premium-display)", fontWeight: 800,
+                fontSize: "1.25rem", color: "white",
+                margin: "0 0 6px", letterSpacing: "-0.01em",
+              }}>
                 Vega İklimlendirme
               </p>
-              <p
-                style={{
-                  fontFamily: "var(--font-premium-mono)",
-                  fontSize: "11px",
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.35)",
-                  margin: "0 0 14px",
-                }}
-              >
+              <p style={{
+                fontFamily: "var(--font-premium-mono)", fontSize: "11px",
+                letterSpacing: "0.14em", textTransform: "uppercase",
+                color: "var(--electric-cyan, #00f0ff)", opacity: 0.55,
+                margin: "0 0 14px",
+              }}>
                 Kurumsal ve Endüstriyel Çözümler
               </p>
-              <p
-                style={{
-                  fontFamily: "var(--font-premium-body)",
-                  fontSize: "0.875rem",
-                  color: "rgba(255,255,255,0.4)",
-                  margin: 0,
-                }}
-              >
+              <p style={{
+                fontFamily: "var(--font-premium-body)",
+                fontSize: "0.875rem", color: "rgba(255,255,255,0.35)", margin: 0,
+              }}>
                 Şişli, İstanbul
               </p>
             </div>
 
             {/* Quick links */}
             <nav aria-label="Footer navigasyon">
-              <ul
-                style={{
-                  listStyle: "none",
-                  margin: 0,
-                  padding: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                  alignItems: "flex-end",
-                }}
-              >
+              <ul style={{
+                listStyle: "none", margin: 0, padding: 0,
+                display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end",
+              }}>
                 {[
                   { label: "Anasayfa",   href: "/" },
                   { label: "Hakkımızda", href: "/#hakkimizda" },
@@ -239,15 +167,20 @@ function Index() {
                   <li key={link.href}>
                     <a
                       href={link.href}
+                      onClick={(e) => {
+                        if (link.href.startsWith("/#")) {
+                          e.preventDefault();
+                          document.getElementById(link.href.slice(2))?.scrollIntoView({ behavior: "smooth" });
+                        }
+                      }}
                       style={{
-                        fontFamily: "var(--font-premium-body)",
-                        fontSize: "0.875rem",
-                        color: "rgba(255,255,255,0.45)",
-                        textDecoration: "none",
+                        fontFamily: "var(--font-premium-mono)", fontSize: "11px",
+                        letterSpacing: "0.1em", textTransform: "uppercase",
+                        color: "rgba(255,255,255,0.35)", textDecoration: "none",
                         transition: "color 180ms ease",
                       }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "white")}
-                      onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.45)")}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--electric-cyan,#00f0ff)")}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.35)")}
                     >
                       {link.label}
                     </a>
@@ -257,22 +190,19 @@ function Index() {
             </nav>
           </div>
 
-          {/* Divider */}
-          <div style={{ height: "1px", background: "rgba(255,255,255,0.07)", marginBottom: "2rem" }} />
+          <div style={{
+            height: "1px",
+            background: "linear-gradient(90deg,transparent,var(--terminal-border,rgba(0,240,255,0.12)) 50%,transparent)",
+            marginBottom: "2.5rem",
+          }} />
 
-          {/* Copyright */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <p
-              style={{
-                fontFamily: "var(--font-premium-mono)",
-                fontSize: "11px",
-                color: "rgba(255,255,255,0.22)",
-                margin: 0,
-                letterSpacing: "0.08em",
-                textAlign: "center",
-              }}
-            >
-              © {new Date().getFullYear()} Vega İklimlendirme — Şişli, İstanbul — Tüm hakları saklıdır
+            <p style={{
+              fontFamily: "var(--font-premium-mono)", fontSize: "10px",
+              color: "rgba(255,255,255,0.18)", margin: 0,
+              letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center",
+            }}>
+              © {new Date().getFullYear()} Vega İklimlendirme · Şişli, İstanbul · Tüm hakları saklıdır
             </p>
           </div>
         </div>

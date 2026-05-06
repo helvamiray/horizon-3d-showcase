@@ -5,6 +5,7 @@ import { animate, spring } from "animejs";
 import { ArrowLeft, ShoppingCart, X, ArrowRight, Phone, Mail } from "lucide-react";
 
 import { getProductById } from "@/lib/productService";
+import { CATEGORY_LABEL } from "@/data/products";
 import { useCart } from "@/providers/CartContext";
 import {
   getVideoForProduct,
@@ -20,14 +21,16 @@ export const Route = createFileRoute("/urunler/$slug")({
 // ── Quote modal — white glassmorphism + Anime.js spring ──────────────────────
 interface QuoteModalProps {
   productName: string;
+  productCategory?: string;
   onClose: () => void;
 }
 
-function QuoteModal({ productName, onClose }: QuoteModalProps) {
+function QuoteModal({ productName, productCategory = "", onClose }: QuoteModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef   = useRef<HTMLDivElement>(null);
   const [name,    setName]    = useState("");
   const [email,   setEmail]   = useState("");
+  const [qty,     setQty]     = useState("1");
   const [message, setMessage] = useState("");
   const [sent,    setSent]    = useState(false);
 
@@ -70,7 +73,15 @@ function QuoteModal({ productName, onClose }: QuoteModalProps) {
     if (!name.trim() || !email.trim()) return;
     const subject = encodeURIComponent(`Teklif Talebi: ${productName} — ${name}`);
     const body = encodeURIComponent(
-      `Ürün: ${productName}\nAd Soyad: ${name}\nE-posta: ${email}\n\nMesaj:\n${message}`
+      `TEKLIF FORMU\n` +
+      `${"─".repeat(40)}\n` +
+      `Ürün Adı   : ${productName}\n` +
+      `Kategori   : ${productCategory}\n` +
+      `Adet       : ${qty}\n` +
+      `${"─".repeat(40)}\n` +
+      `Ad Soyad   : ${name}\n` +
+      `E-posta    : ${email}\n\n` +
+      `Notlar:\n${message}`
     );
     window.location.href = `mailto:${VEGA_CONTACTS.email}?subject=${subject}&body=${body}`;
     setSent(true);
@@ -88,7 +99,7 @@ function QuoteModal({ productName, onClose }: QuoteModalProps) {
         background: "rgba(10,22,40,0.55)",
         backdropFilter: "blur(18px)",
         WebkitBackdropFilter: "blur(18px)",
-        zIndex: 10000,
+        zIndex: 20000,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -257,8 +268,19 @@ function QuoteModal({ productName, onClose }: QuoteModalProps) {
                 onFocus={(e) => ((e.currentTarget as HTMLInputElement).style.borderColor = "var(--gold, #c9a84c)")}
                 onBlur={(e)  => ((e.currentTarget as HTMLInputElement).style.borderColor = "rgba(10,22,40,0.15)")}
               />
+              <input
+                type="number"
+                placeholder="Adet *"
+                min={1}
+                value={qty}
+                onChange={(e) => setQty(e.target.value)}
+                aria-label="Adet"
+                style={lightInputStyle}
+                onFocus={(e) => ((e.currentTarget as HTMLInputElement).style.borderColor = "var(--gold, #c9a84c)")}
+                onBlur={(e)  => ((e.currentTarget as HTMLInputElement).style.borderColor = "rgba(10,22,40,0.15)")}
+              />
               <textarea
-                placeholder="Mesajınız (isteğe bağlı)"
+                placeholder="Notlar (isteğe bağlı)"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
@@ -443,11 +465,7 @@ function ProductDetailPage() {
             <div className="panel-divider" data-animate />
 
             <div className="price-row" data-animate>
-              {product.price && product.price !== "-" ? (
-                <span className="price-large">{product.price}</span>
-              ) : (
-                <span className="price-quote-label">Fiyat için teklif alın</span>
-              )}
+              <span className="price-quote-label">Teklif ile temin</span>
             </div>
 
             <div className="cta-row" data-animate>
@@ -471,6 +489,7 @@ function ProductDetailPage() {
       {quoteOpen && (
         <QuoteModal
           productName={product.name}
+          productCategory={CATEGORY_LABEL[product.category]?.tr ?? product.category}
           onClose={() => setQuoteOpen(false)}
         />
       )}
@@ -494,7 +513,7 @@ function ProductDetailPage() {
             fontFamily: "var(--font-premium-display)",
             fontWeight: 600,
             fontSize: "0.875rem",
-            zIndex: 10001,
+            zIndex: 20001,
             display: "flex",
             alignItems: "center",
             gap: "8px",

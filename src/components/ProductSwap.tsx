@@ -245,22 +245,6 @@ const ProductSwap = () => {
               ))}
             </div>
 
-            {/* Price */}
-            {selected.price && selected.price !== "-" && (
-              <div
-                style={{
-                  fontFamily: "var(--font-premium-mono)",
-                  fontSize: "1.125rem",
-                  fontWeight: 700,
-                  color: "var(--navy-primary)",
-                  marginBottom: "1.25rem",
-                  paddingTop: "0.75rem",
-                  borderTop: "1px solid #f1f5f9",
-                }}
-              >
-                {selected.price}
-              </div>
-            )}
 
             {/* Action row */}
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>

@@ -16,6 +16,7 @@ interface ProductGridProps {
 
 // Per-category accent colour bar mapping
 const CAT_COLORS: Record<ProductCategory, string> = {
+  "vrf":         "var(--electric-cyan,#00f0ff)",
   "isi-pompasi": "var(--gold)",
   "kombi":       "var(--navy-primary)",
   "klima":       "var(--vega-cyan)",

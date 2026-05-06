@@ -1,8 +1,23 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { animate, svg } from "animejs";
 
 gsap.registerPlugin(ScrollTrigger);
+
+/**
+ * Simplified Turkey outline — 1600 × 748 viewBox
+ * Key points traced around Turkey's coast & borders.
+ */
+const TURKEY_OUTLINE =
+  "M 162,42 L 220,20 L 295,12 L 420,8 L 580,5 L 780,18 " +
+  "L 960,35 L 1100,65 L 1290,58 L 1400,115 L 1510,195 " +
+  "L 1545,300 L 1510,410 L 1455,490 L 1400,545 L 1310,558 " +
+  "L 1180,560 L 1090,558 L 1020,565 L 965,630 L 940,695 " +
+  "L 890,668 L 820,648 L 720,638 L 635,652 L 575,662 " +
+  "L 520,640 L 455,592 L 395,555 L 330,528 L 282,520 " +
+  "L 235,546 L 190,505 L 148,462 L 112,415 L 78,358 " +
+  "L 65,288 L 80,228 L 108,172 L 145,118 L 128,72 L 162,42 Z";
 
 // ── City data — coordinates calibrated to trk.webp (1600 × 748) ─────────────
 // Projection: x = (lon − 25.5) / 19.5 × 1600 | y = (42 − lat) / 6.5 × 748
@@ -111,11 +126,12 @@ const TurkeyMapPulse = () => {
 
   const cityById = Object.fromEntries(CITIES.map((c) => [c.id, c]));
 
-  // Animate connecting lines on scroll-enter
+  // Animate connecting lines on scroll-enter + Anime.js border glow
   useEffect(() => {
     const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!motionOk || !svgRef.current) return;
 
+    /* ── GSAP: city connecting lines draw in on scroll ── */
     const lines = svgRef.current.querySelectorAll<SVGLineElement>(".conn-line");
     lines.forEach((ln) => {
       const len = Math.hypot(
@@ -140,7 +156,41 @@ const TurkeyMapPulse = () => {
       });
     }, svgRef);
 
-    return () => ctx.revert();
+    /* ── Anime.js: border glow dot travels around Turkey ── */
+    const borderPath = document.getElementById("turkey-outline-draw");
+    const borderDot  = document.getElementById("turkey-border-dot");
+
+    let dotAnim:  ReturnType<typeof animate> | null = null;
+    let drawAnim: ReturnType<typeof animate> | null = null;
+
+    if (borderPath && borderDot) {
+      try {
+        // Travelling dot via createMotionPath
+        dotAnim = animate(borderDot, {
+          ...svg.createMotionPath("#turkey-outline-draw"),
+          duration: 16000,
+          loop: true,
+          ease: "linear",
+        });
+
+        // Chasing "drawn segment" — a short lit segment travels the path
+        const drawable = svg.createDrawable("#turkey-outline-draw");
+        drawAnim = animate(drawable, {
+          draw: ["0 0.06", "0.94 1"],
+          duration: 16000,
+          loop: true,
+          ease: "linear",
+        });
+      } catch (_) {
+        // If svg.createMotionPath/createDrawable not available, fallback gracefully
+      }
+    }
+
+    return () => {
+      ctx.revert();
+      dotAnim?.pause();
+      drawAnim?.pause();
+    };
   }, []);
 
   const handleEnter = useCallback(
@@ -214,7 +264,7 @@ const TurkeyMapPulse = () => {
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            {/* Glow for dots */}
+            {/* Glow for city dots */}
             <filter id="glow-dot" x="-80%" y="-80%" width="260%" height="260%">
               <feGaussianBlur stdDeviation="6" result="blur" />
               <feMerge>
@@ -222,7 +272,44 @@ const TurkeyMapPulse = () => {
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
+            {/* Intense glow for border traveller */}
+            <filter id="glow-border" x="-200%" y="-200%" width="500%" height="500%">
+              <feGaussianBlur stdDeviation="10" result="big" />
+              <feGaussianBlur stdDeviation="4"  result="small" in="SourceGraphic" />
+              <feMerge>
+                <feMergeNode in="big" />
+                <feMergeNode in="small" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
+
+          {/* ── Turkey border outline — Anime.js draws & chases it ── */}
+          {/* Static very-dim fill so the silhouette is visible */}
+          <path
+            d={TURKEY_OUTLINE}
+            fill="rgba(0,240,255,0.025)"
+            stroke="none"
+          />
+          {/* Animated drawable border (the "drawing" line) */}
+          <path
+            id="turkey-outline-draw"
+            d={TURKEY_OUTLINE}
+            fill="none"
+            stroke="rgba(0,240,255,0.55)"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+            filter="url(#glow-conn)"
+            style={{ strokeDasharray: "1 1", strokeDashoffset: "0" }}
+          />
+          {/* Travelling glow dot */}
+          <circle
+            id="turkey-border-dot"
+            r="7"
+            fill="#00f0ff"
+            filter="url(#glow-border)"
+            style={{ offsetPath: `path('${TURKEY_OUTLINE}')` }}
+          />
 
           {/* Connecting lines */}
           {CONNECTIONS.map(([a, b]) => {

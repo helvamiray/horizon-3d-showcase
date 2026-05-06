@@ -162,19 +162,6 @@ const PremiumHero = () => {
           >
             {label}
           </span>
-          {product?.price && (
-            <span
-              style={{
-                fontFamily: "var(--font-premium-mono)",
-                fontSize: "0.6875rem",
-                letterSpacing: "0.1em",
-                color: "var(--gold)",
-                fontWeight: 700,
-              }}
-            >
-              {product.price}
-            </span>
-          )}
         </div>
 
         {/* Description */}

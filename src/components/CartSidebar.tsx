@@ -197,26 +197,15 @@ const CartSidebar = () => {
                     </div>
                     <div
                       style={{
-                        fontFamily: "var(--font-premium-body)",
-                        fontSize: "0.75rem",
-                        color: "#aab4bc",
+                        fontFamily: "var(--font-premium-mono)",
+                        fontSize: "0.6875rem",
+                        letterSpacing: "0.1em",
+                        color: "var(--electric-cyan, #00f0ff)",
                         marginTop: "0.125rem",
+                        opacity: 0.7,
                       }}
                     >
-                      {product.price || (
-                        <span
-                          style={{
-                            background: "rgba(201,168,76,0.12)",
-                            color: "var(--gold)",
-                            padding: "0.1rem 0.5rem",
-                            borderRadius: "4px",
-                            fontSize: "0.6875rem",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Teklif ile
-                        </span>
-                      )}
+                      Teklif ile temin
                     </div>
 
                     {/* Qty controls */}

@@ -33,11 +33,12 @@ const QuoteSimple = () => {
     <section
       id="iletisim"
       style={{
-        background: "var(--navy-primary, #0a1628)",
+        background: "var(--terminal-bg, #020608)",
         padding: "5rem 1.5rem",
         position: "relative",
         zIndex: 3000,
         scrollMarginTop: "72px",
+        borderTop: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
       }}
     >
       <div
@@ -78,7 +79,7 @@ const QuoteSimple = () => {
             }}
           >
             Projenizi<br />
-            <span style={{ color: "var(--gold, #c9a84c)" }}>Birlikte Tasarlayalım</span>
+            <span style={{ color: "var(--electric-cyan, #00f0ff)" }}>Birlikte Tasarlayalım</span>
           </h2>
           <p
             style={{
