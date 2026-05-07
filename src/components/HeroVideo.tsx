@@ -1,8 +1,7 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { HERO_VEGA_VIDEO } from "@/constants/videoAssets";
 import { prefersSmoothHashScroll } from "@/utils/navigateToHashSection";
-import { useIsNarrowViewport } from "@/hooks/useIsNarrowViewport";
 
 interface Props {
   nextSectionId?: string;
@@ -10,7 +9,23 @@ interface Props {
 
 const HeroVideo = ({ nextSectionId = "urunler" }: Props) => {
   const sectionRef = useRef<HTMLElement>(null);
-  const narrow = useIsNarrowViewport();
+  const videoRef   = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const play = () => video.play().catch(() => {});
+
+    // If the page has already fired 'load', play immediately;
+    // otherwise wait for it so the video doesn't compete with critical resources.
+    if (document.readyState === "complete") {
+      play();
+    } else {
+      window.addEventListener("load", play, { once: true });
+      return () => window.removeEventListener("load", play);
+    }
+  }, []);
 
   const scrollToNext = () => {
     const smooth = prefersSmoothHashScroll();
@@ -35,11 +50,11 @@ const HeroVideo = ({ nextSectionId = "urunler" }: Props) => {
       aria-label="VEGA İklimlendirme Hero"
     >
       <video
-        autoPlay
+        ref={videoRef}
         muted
         loop
         playsInline
-        preload={narrow ? "none" : "metadata"}
+        preload="none"
         poster={HERO_VEGA_VIDEO.poster}
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
       >

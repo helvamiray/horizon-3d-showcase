@@ -41,6 +41,9 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 export function TurkeyMapLive() {
+  // Leaflet requires browser DOM — bail out during SSR
+  if (typeof window === "undefined") return null;
+
   const [projects, setProjects] = useState<MapProject[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
 

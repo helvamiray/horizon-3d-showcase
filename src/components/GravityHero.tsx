@@ -11,6 +11,18 @@ export function GravityHero() {
   const textRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      const play = () => video.play().catch(() => {});
+      if (document.readyState === "complete") {
+        play();
+      } else {
+        window.addEventListener("load", play, { once: true });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     const motionOk = !window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -93,11 +105,10 @@ export function GravityHero() {
       {/* Background video */}
       <video
         ref={videoRef}
-        autoPlay
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="none"
         poster={HERO_VEGA_VIDEO.poster}
         className="hero-video"
         aria-hidden="true"
