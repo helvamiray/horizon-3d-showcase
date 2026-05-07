@@ -1,0 +1,29 @@
+# =============================================================================
+#  horizon-3d-showcase — sunucu / ortam bağımlılıkları
+# =============================================================================
+#
+# Bu depo bir JavaScript/TypeScript uygulamasıdır (Vite + React + TanStack).
+# pip ile kurulacak Python paketi YOKTUR. Gerçek kütüphane listesi:
+#
+#   • package.json      → dependencies + devDependencies (isimler ve sürüm aralıkları)
+#   • package-lock.json → tam kilitli sürümler (sunucuda npm ci için şart)
+#
+# Sunucuda tipik kurulum:
+#
+#   1) Node.js 20.x veya 22.x kur (https://nodejs.org)
+#   2) Depo kökünde:
+#        npm ci              # geliştirme + build (CI’da genelde böyle)
+#        npm run build       # çıktı: dist/
+#   3) Üretimde sadece çalışma zamanı paketleri (nadiren build sunucuda yapılmaz):
+#        npm ci --omit=dev
+#        # Not: "build" için vite vb. devDependencies gerekir; çoğu ekip
+#        #      build’i CI’da yapıp yalnızca dist/’i sunucuya atar.
+#
+# Özel ortam:
+#   • Cloudflare / TanStack Start: projenin wrangler / adapter dokümantasyonuna bakın.
+#   • Video yeniden kodlama scripti: sistemde ffmpeg gerekir (Python değil):
+#       npm run media:encode-hero
+#
+# =============================================================================
+# Aşağıda pip ile kurulacak satır yok — yalnızca bilgi amaçlı başlık.
+# =============================================================================
