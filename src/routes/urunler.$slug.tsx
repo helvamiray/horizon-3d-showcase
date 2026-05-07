@@ -1,8 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, type NavigateFn } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { animate, spring } from "animejs";
-import { ArrowLeft, ShoppingCart, X, ArrowRight, Phone, Mail } from "lucide-react";
+import { ArrowLeft, ShoppingCart, X, ArrowRight, Phone, Mail, Copy, Check } from "lucide-react";
 
 import { getProductById } from "@/lib/productService";
 import { CATEGORY_LABEL } from "@/data/products";
@@ -12,20 +12,45 @@ import {
   getPosterForProduct,
 } from "@/constants/productVideos";
 import { VEGA_CONTACTS } from "@/utils/contacts";
+import { contactService } from "@/lib/contactService";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { hashScrollIntoViewOptions } from "@/utils/navigateToHashSection";
 import "@/styles/product-detail.css";
 
 export const Route = createFileRoute("/urunler/$slug")({
   component: ProductDetailPage,
 });
 
+/** Matches `id="urunler"` on the home catalog section (ProductEngine / etc.). */
+const CATALOG_SECTION_HASH = "urunler";
+
+function navigateToCatalog(navigate: NavigateFn) {
+  navigate({
+    to: "/",
+    hash: CATALOG_SECTION_HASH,
+    resetScroll: false,
+    hashScrollIntoView: hashScrollIntoViewOptions(),
+  });
+}
+
 // ── Quote modal — white glassmorphism + Anime.js spring ──────────────────────
 interface QuoteModalProps {
+  productId: string;
   productName: string;
+  productNameEn: string;
+  brand: string;
   productCategory?: string;
   onClose: () => void;
 }
 
-function QuoteModal({ productName, productCategory = "", onClose }: QuoteModalProps) {
+function QuoteModal({
+  productId,
+  productName,
+  productNameEn,
+  brand,
+  productCategory = "",
+  onClose,
+}: QuoteModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef   = useRef<HTMLDivElement>(null);
   const [name,    setName]    = useState("");
@@ -71,17 +96,26 @@ function QuoteModal({ productName, productCategory = "", onClose }: QuoteModalPr
 
   const handleSubmit = () => {
     if (!name.trim() || !email.trim()) return;
+    const qtyN = Math.max(1, Math.floor(Number(qty)) || 1);
+    contactService.create({
+      type: "product-quote",
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim() || undefined,
+      category: productCategory || undefined,
+      cartItems: [{ productName: `${brand} — ${productName}`, qty: qtyN }],
+    });
     const subject = encodeURIComponent(`Teklif Talebi: ${productName} — ${name}`);
     const body = encodeURIComponent(
       `TEKLIF FORMU\n` +
-      `${"─".repeat(40)}\n` +
-      `Ürün Adı   : ${productName}\n` +
-      `Kategori   : ${productCategory}\n` +
-      `Adet       : ${qty}\n` +
-      `${"─".repeat(40)}\n` +
-      `Ad Soyad   : ${name}\n` +
-      `E-posta    : ${email}\n\n` +
-      `Notlar:\n${message}`
+        `${"─".repeat(40)}\n` +
+        `Ürün Adı   : ${productName}\n` +
+        `Kategori   : ${productCategory}\n` +
+        `Adet       : ${qtyN}\n` +
+        `${"─".repeat(40)}\n` +
+        `Ad Soyad   : ${name}\n` +
+        `E-posta    : ${email}\n\n` +
+        `Notlar:\n${message}`
     );
     window.location.href = `mailto:${VEGA_CONTACTS.email}?subject=${subject}&body=${body}`;
     setSent(true);
@@ -373,14 +407,29 @@ function ProductDetailPage() {
   const navigate    = useNavigate();
   const panelRef    = useRef<HTMLDivElement>(null);
   const { add } = useCart();
+  const { lang, setLang, t } = useLanguage();
 
   const [quoteOpen, setQuoteOpen]   = useState(false);
   const [toastMsg,  setToastMsg]    = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const product   = getProductById(slug);
   const videoSrc  = getVideoForProduct(product?.category ?? slug);
   const posterSrc = getPosterForProduct(product?.category ?? slug);
+
+  const copyPageUrl = () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    void (async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+      } catch {
+        window.prompt(t("productDetail.copyLink"), url);
+      }
+    })();
+  };
 
   // Entrance animation for the glass panel
   useEffect(() => {
@@ -395,7 +444,7 @@ function ProductDetailPage() {
       );
     }, panelRef);
     return () => ctx.revert();
-  }, [slug]);
+  }, [slug, lang]);
 
   // Prevent body scroll when quote modal is open
   useEffect(() => {
@@ -403,16 +452,20 @@ function ProductDetailPage() {
     return () => { document.body.style.overflow = ""; };
   }, [quoteOpen]);
 
-  // Silent add-to-cart — no cart panel, just a toast
+  if (!product) return <ProductNotFound slug={slug} />;
+
+  const displayName = lang === "tr" ? product.name : product.name_en;
+  const displayDesc = lang === "tr" ? product.description : product.description_en;
+  const specLines = lang === "tr" ? product.specs : product.specs_en;
+  const categoryLabel = CATEGORY_LABEL[product.category]?.[lang] ?? product.category;
+  const showImage = Boolean(product.image && !product.image.includes("placeholder"));
+
   const handleAddToCart = () => {
-    if (!product) return;
     add(product);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    setToastMsg(`✓  ${product.name} sepete eklendi`);
+    setToastMsg(`${displayName} sepete eklendi`);
     toastTimer.current = setTimeout(() => setToastMsg(null), 2400);
   };
-
-  if (!product) return <ProductNotFound slug={slug} />;
 
   return (
     <>
@@ -430,55 +483,91 @@ function ProductDetailPage() {
         </div>
 
         {/* Back button */}
-        <button className="back-button" onClick={() => navigate({ to: "/" })} aria-label="Kataloğa Dön">
+        <button
+          className="back-button"
+          onClick={() => navigateToCatalog(navigate)}
+          aria-label={t("productDetail.back")}
+        >
           <ArrowLeft size={16} />
-          <span>Kataloğa Dön</span>
+          <span>{t("productDetail.back")}</span>
         </button>
+
+        <div className="product-detail-floating-actions" data-animate>
+          <button
+            type="button"
+            className={`toolbar-btn${lang === "tr" ? " active" : ""}`}
+            onClick={() => setLang("tr")}
+          >
+            TR
+          </button>
+          <button
+            type="button"
+            className={`toolbar-btn${lang === "en" ? " active" : ""}`}
+            onClick={() => setLang("en")}
+          >
+            EN
+          </button>
+          <button type="button" className="toolbar-btn" onClick={copyPageUrl}>
+            {linkCopied ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}
+            {linkCopied ? t("productDetail.copied") : t("productDetail.copyLink")}
+          </button>
+        </div>
 
         {/* Glass panel */}
         <div className="glass-panel-wrapper">
           <div ref={panelRef} className="product-glass-panel">
             <div className="panel-header" data-animate>
               <span className="brand-badge">{product.brand}</span>
-              <span className="category-badge">{product.category}</span>
+              <span className="category-badge">{categoryLabel}</span>
             </div>
 
-            <h1 className="product-page-title" data-animate>{product.name}</h1>
-            <p className="product-page-description" data-animate>{product.description}</p>
+            <h1 className="product-page-title" data-animate>{displayName}</h1>
+            <p className="product-page-description" data-animate>{displayDesc}</p>
 
-            {product.specs.length > 0 && (
-              <div className="specs-grid" data-animate>
-                {product.specs.slice(0, 4).map((spec, i) => {
-                  const [key, ...rest] = spec.split(":");
-                  const value = rest.length ? rest.join(":").trim() : spec;
-                  const label = rest.length ? key.trim() : `Özellik ${i + 1}`;
-                  return (
-                    <div key={i} className="spec-item">
-                      <span className="spec-key">{label}</span>
-                      <span className="spec-value">{value}</span>
-                    </div>
-                  );
-                })}
+            {showImage && (
+              <div className="product-detail-thumb-wrap" data-animate>
+                <img src={product.image} alt="" className="product-detail-thumb" />
               </div>
+            )}
+
+            {specLines.length > 0 && (
+              <>
+                <p className="specs-heading" data-animate>{t("productDetail.specs")}</p>
+                <div className="specs-grid-scroll" data-animate>
+                  <div className="specs-grid">
+                    {specLines.map((spec, i) => {
+                      const [key, ...rest] = spec.split(":");
+                      const value = rest.length ? rest.join(":").trim() : spec;
+                      const label = rest.length ? key.trim() : `#${i + 1}`;
+                      return (
+                        <div key={i} className="spec-item">
+                          <span className="spec-key">{label}</span>
+                          <span className="spec-value">{value}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
             )}
 
             <div className="panel-divider" data-animate />
 
             <div className="price-row" data-animate>
-              <span className="price-quote-label">Teklif ile temin</span>
+              <span className="price-quote-label">{t("productDetail.quoteSupply")}</span>
             </div>
 
             <div className="cta-row" data-animate>
               <button className="btn-add-cart" onClick={handleAddToCart}>
                 <ShoppingCart size={16} />
-                <span>Sepete Ekle</span>
+                <span>{t("productDetail.addCart")}</span>
               </button>
               <button
                 className="btn-quote-outline"
                 onClick={() => setQuoteOpen(true)}
                 aria-haspopup="dialog"
               >
-                Teklif Al
+                {t("productDetail.quote")}
               </button>
             </div>
           </div>
@@ -488,8 +577,11 @@ function ProductDetailPage() {
       {/* Quote modal — rendered OUTSIDE the page stack so z-index is clean */}
       {quoteOpen && (
         <QuoteModal
+          productId={product.id}
           productName={product.name}
-          productCategory={CATEGORY_LABEL[product.category]?.tr ?? product.category}
+          productNameEn={product.name_en}
+          brand={product.brand}
+          productCategory={categoryLabel}
           onClose={() => setQuoteOpen(false)}
         />
       )}
@@ -542,7 +634,9 @@ function ProductNotFound({ slug }: { slug: string }) {
   return (
     <div className="not-found-page">
       <p>Ürün bulunamadı: {slug}</p>
-      <button onClick={() => navigate({ to: "/" })}>Ana Sayfaya Dön</button>
+      <button type="button" onClick={() => navigateToCatalog(navigate)}>
+        Ana Sayfaya Dön
+      </button>
     </div>
   );
 }

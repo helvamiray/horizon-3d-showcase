@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import { useMagneticButton } from "@/hooks/useMagneticButton";
 import { VEGA_CONTACTS } from "@/utils/contacts";
 
@@ -26,7 +26,9 @@ interface FormState {
 function FormSuccess() {
   return (
     <div className="form-success">
-      <span className="form-success-icon">✉️</span>
+      <span className="form-success-icon" aria-hidden>
+        <Mail size={28} strokeWidth={1.75} />
+      </span>
       <h4
         style={{
           fontFamily: "var(--font-premium-display)",

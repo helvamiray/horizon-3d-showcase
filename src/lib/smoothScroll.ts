@@ -1,12 +1,18 @@
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { MEDIA_MAX_NARROW } from "@/constants/layoutBreakpoint";
 
 gsap.registerPlugin(ScrollTrigger);
 
 let lenisInstance: Lenis | null = null;
 
-export function initSmoothScroll(): Lenis {
+export function initSmoothScroll(): Lenis | null {
+  if (typeof window === "undefined") return null;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return null;
+  /* Lenis: sadece lg+; dar viewport’ta native scroll + dokunmatik daha doğal. */
+  if (window.matchMedia(MEDIA_MAX_NARROW).matches) return null;
+
   if (lenisInstance) return lenisInstance;
 
   const lenis = new Lenis({

@@ -2,29 +2,19 @@
  * ProductSlider
  * ─────────────────────────────────────────────────────────────────────────
  * • Infinite auto-scroll from left to right (Framer Motion linear animation).
- * • Card: product image + category emoji + product name.
+ * • Card: product image + category label + product name.
  * • Click → opens ProductModal with video BG, full specs, Add to Cart.
  * • Cart fully supports multiple different products + individual quantities.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ShoppingCart, ExternalLink } from "lucide-react";
+import { X, ShoppingCart, ExternalLink, Package } from "lucide-react";
 import { PRODUCTS, CATEGORY_LABEL, type Product } from "@/data/products";
 import { useCart } from "@/providers/CartContext";
+import { HERO_VEGA_VIDEO } from "@/constants/videoAssets";
 
-/* ── Category emoji map ─────────────────────────────────────────── */
-const CAT_EMOJI: Record<string, string> = {
-  vrf:        "❄️",
-  "isi-pompasi": "🌡️",
-  klima:      "💨",
-  kombi:      "🔥",
-  yangin:     "🧯",
-  tank:       "💧",
-  boru:       "⚙️",
-  radyator:   "♨️",
-};
-
-/* ── Product Modal ──────────────────────────────────────────────── */
 function ProductModal({
   product,
   onClose,
@@ -32,6 +22,7 @@ function ProductModal({
   product: Product;
   onClose: () => void;
 }) {
+  const navigate = useNavigate();
   const { add } = useCart();
   const [added, setAdded] = useState(false);
   const [qty, setQty]     = useState(1);
@@ -42,7 +33,11 @@ function ProductModal({
     setTimeout(() => setAdded(false), 1800);
   };
 
-  const emoji = CAT_EMOJI[product.category] ?? "🔧";
+  const modalPoster =
+    product.image && product.image !== "/placeholder.svg"
+      ? product.image
+      : HERO_VEGA_VIDEO.poster;
+  const modalVideoSrc = product.video || HERO_VEGA_VIDEO.mp4;
 
   return (
     <motion.div
@@ -54,6 +49,8 @@ function ProductModal({
       style={{
         position: "fixed",
         inset: 0,
+        width: "100%",
+        minHeight: "100dvh",
         zIndex: 10500,
         display: "flex",
         alignItems: "center",
@@ -63,16 +60,22 @@ function ProductModal({
         backdropFilter: "blur(8px)",
       }}
     >
-      {/* Background video */}
+      {/* Background video (muted, inline playback for iOS) */}
       <video
-        autoPlay muted loop playsInline
-        src={product.video || "/videos/vega_tanitim.mp4"}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={modalPoster}
         style={{
           position: "absolute",
           inset: 0, width: "100%", height: "100%",
           objectFit: "cover", opacity: 0.12, zIndex: 0,
         }}
-      />
+      >
+        <source src={modalVideoSrc} type="video/mp4" />
+      </video>
 
       {/* Modal panel */}
       <motion.div
@@ -85,8 +88,10 @@ function ProductModal({
           position: "relative",
           zIndex: 2,
           background: "rgba(8,13,20,0.97)",
-          border: "1px solid rgba(0,240,255,0.2)",
           borderTop: "2px solid rgba(0,240,255,0.4)",
+          borderRight: "1px solid rgba(0,240,255,0.2)",
+          borderBottom: "1px solid rgba(0,240,255,0.2)",
+          borderLeft: "1px solid rgba(0,240,255,0.2)",
           borderRadius: "10px",
           width: "100%",
           maxWidth: "680px",
@@ -128,14 +133,14 @@ function ProductModal({
           </div>
         )}
 
-        {/* Emoji + category */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "0.75rem" }}>
-          <span style={{ fontSize: "1.75rem" }}>{emoji}</span>
+        {/* Category */}
+        <div style={{ marginBottom: "0.75rem" }}>
           <span style={{
             fontFamily: "var(--font-premium-mono)", fontSize: "10px",
             letterSpacing: "0.16em", textTransform: "uppercase",
             color: "var(--electric-cyan,#00f0ff)", opacity: 0.7,
             border: "1px solid rgba(0,240,255,0.2)", borderRadius: "2px", padding: "2px 8px",
+            display: "inline-block",
           }}>
             {CATEGORY_LABEL[product.category]?.tr ?? product.category}
           </span>
@@ -226,12 +231,16 @@ function ProductModal({
             }}
           >
             <ShoppingCart size={15} />
-            {added ? "Sepete Eklendi ✓" : "Sepete Ekle"}
+            {added ? "Sepete eklendi" : "Sepete Ekle"}
           </button>
 
           {/* Detail page */}
           <button
-            onClick={() => window.open(`/urunler/${product.id}`, "_blank", "noopener,noreferrer")}
+            type="button"
+            onClick={() => {
+              onClose();
+              navigate({ to: "/urunler/$slug", params: { slug: product.id } });
+            }}
             style={{
               display: "flex", alignItems: "center", gap: "6px",
               background: "transparent",
@@ -256,7 +265,6 @@ function ProductModal({
 
 /* ── Slider card ────────────────────────────────────────────────── */
 function SliderCard({ product, onClick }: { product: Product; onClick: () => void }) {
-  const emoji = CAT_EMOJI[product.category] ?? "🔧";
   const hasImg = product.image && product.image !== "/placeholder.svg";
 
   return (
@@ -266,67 +274,25 @@ function SliderCard({ product, onClick }: { product: Product; onClick: () => voi
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
       aria-label={product.name}
-      style={{
-        flexShrink: 0,
-        width: "220px",
-        background: "var(--terminal-surface,#080d14)",
-        border: "1px solid var(--terminal-border,rgba(0,240,255,0.1))",
-        borderTop: "2px solid rgba(0,240,255,0.25)",
-        borderRadius: "6px",
-        overflow: "hidden",
-        cursor: "pointer",
-        transition: "border-color 200ms ease, box-shadow 200ms ease",
-        userSelect: "none",
-      }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "rgba(0,240,255,0.35)";
-        el.style.boxShadow   = "0 0 24px rgba(0,240,255,0.07)";
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "var(--terminal-border,rgba(0,240,255,0.1))";
-        el.style.boxShadow   = "none";
-      }}
+      className="product-slider-card"
     >
-      {/* Image or emoji placeholder */}
-      <div style={{
-        height: "130px",
-        background: "rgba(0,0,0,0.35)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
-      }}>
+      <div className="product-slider-card__media">
         {hasImg ? (
           <img
             src={product.image}
             alt={product.name}
             draggable={false}
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
           />
         ) : (
-          <span style={{ fontSize: "3rem", userSelect: "none" }}>{emoji}</span>
+          <Package size={40} strokeWidth={1.25} aria-hidden className="product-slider-card__placeholder" />
         )}
       </div>
 
-      {/* Text */}
-      <div style={{ padding: "0.9rem 1rem 1rem" }}>
-        <span style={{
-          display: "block",
-          fontFamily: "var(--font-premium-mono)", fontSize: "9px",
-          letterSpacing: "0.14em", textTransform: "uppercase",
-          color: "var(--electric-cyan,#00f0ff)", opacity: 0.6, marginBottom: "5px",
-        }}>
-          {emoji} {CATEGORY_LABEL[product.category]?.tr ?? product.category}
+      <div className="product-slider-card__body">
+        <span className="product-slider-card__category">
+          {CATEGORY_LABEL[product.category]?.tr ?? product.category}
         </span>
-        <p style={{
-          fontFamily: "var(--font-premium-display)", fontSize: "13px",
-          fontWeight: 700, color: "#fff",
-          margin: 0, lineHeight: 1.3,
-          display: "-webkit-box", WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical", overflow: "hidden",
-        }}>
+        <p className="product-slider-card__title">
           {product.name}
         </p>
       </div>
@@ -340,80 +306,58 @@ const ITEMS = [...PRODUCTS, ...PRODUCTS]; // double for seamless loop
 const ProductSlider = () => {
   const [modal, setModal] = useState<Product | null>(null);
 
+  useEffect(() => {
+    if (!modal) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [modal]);
+
   return (
-    <section
-      style={{
-        background: "var(--terminal-surface,#080d14)",
-        padding: "clamp(48px,7vw,80px) 0",
-        borderTop:    "1px solid var(--terminal-border,rgba(0,240,255,0.1))",
-        borderBottom: "1px solid var(--terminal-border,rgba(0,240,255,0.1))",
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
-      {/* Section label */}
-      <div style={{
-        padding: "0 clamp(20px,6vw,80px)",
-        marginBottom: "1.5rem",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "baseline",
-      }}>
-        <p style={{
-          fontFamily: "var(--font-premium-mono)", fontSize: "11px",
-          letterSpacing: "0.28em", textTransform: "uppercase",
-          color: "var(--electric-cyan,#00f0ff)", margin: 0,
-        }}>
-          // ÜRÜNLERİMİZ — Tüm kataloğu inceleyin
-        </p>
-      </div>
+    <>
+      <section className="product-slider-section">
+        <div className="product-slider-fade product-slider-fade--left" aria-hidden />
+        <div className="product-slider-fade product-slider-fade--right" aria-hidden />
 
-      {/* Fade edges */}
-      <div aria-hidden="true" style={{
-        position: "absolute", top: 0, bottom: 0, left: 0, width: "80px", zIndex: 2,
-        background: "linear-gradient(to right, var(--terminal-surface,#080d14), transparent)",
-        pointerEvents: "none",
-      }} />
-      <div aria-hidden="true" style={{
-        position: "absolute", top: 0, bottom: 0, right: 0, width: "80px", zIndex: 2,
-        background: "linear-gradient(to left, var(--terminal-surface,#080d14), transparent)",
-        pointerEvents: "none",
-      }} />
+        <div className="product-slider-viewport">
+          <motion.div
+            className="product-slider-track"
+            animate={{ x: [0, -(220 + 14) * PRODUCTS.length] }}
+            transition={{
+              duration: PRODUCTS.length * 4,
+              ease: "linear",
+              repeat: Infinity,
+              repeatType: "loop",
+            }}
+          >
+            {ITEMS.map((product, i) => (
+              <SliderCard
+                key={`${product.id}-${i}`}
+                product={product}
+                onClick={() => setModal(product)}
+              />
+            ))}
+          </motion.div>
+        </div>
+      </section>
 
-      {/* Infinite slider */}
-      <div style={{ overflow: "hidden", paddingBottom: "8px" }}>
-        <motion.div
-          style={{
-            display: "flex",
-            gap: "14px",
-            width: "max-content",
-            paddingLeft: "clamp(20px,6vw,80px)",
-          }}
-          animate={{ x: [0, -(220 + 14) * PRODUCTS.length] }}
-          transition={{
-            duration: PRODUCTS.length * 4,
-            ease: "linear",
-            repeat: Infinity,
-            repeatType: "loop",
-          }}
-        >
-          {ITEMS.map((product, i) => (
-            <SliderCard
-              key={`${product.id}-${i}`}
-              product={product}
-              onClick={() => setModal(product)}
-            />
-          ))}
-        </motion.div>
-      </div>
-
-      {/* Modal */}
-      <AnimatePresence>
-        {modal && (
-          <ProductModal product={modal} onClose={() => setModal(null)} />
-        )}
-      </AnimatePresence>
-    </section>
+      {typeof document !== "undefined"
+        ? createPortal(
+            <AnimatePresence>
+              {modal ? (
+                <ProductModal
+                  key={modal.id}
+                  product={modal}
+                  onClose={() => setModal(null)}
+                />
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
+    </>
   );
 };
 

@@ -117,12 +117,86 @@
   margin-bottom: 28px;
 }
 
+.product-detail-floating-actions {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.product-detail-floating-actions .toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 280ms ease;
+}
+
+.product-detail-floating-actions .toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.product-detail-floating-actions .toolbar-btn.active {
+  border-color: var(--gold, #c9a84c);
+  color: var(--gold, #c9a84c);
+}
+
+.product-detail-thumb-wrap {
+  margin-bottom: 24px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.product-detail-thumb {
+  display: block;
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+}
+
+.specs-heading {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 10px;
+}
+
 /* ─── SPECS ─── */
 .specs-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 28px;
+}
+
+.specs-grid-scroll {
+  max-height: min(320px, 45vh);
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 28px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.specs-grid-scroll .specs-grid {
+  margin-bottom: 0;
 }
 
 .spec-item {
@@ -248,6 +322,13 @@
 @media (max-width: 768px) {
   .product-detail-page {
     align-items: flex-end;
+    justify-content: center;
+  }
+
+  .product-detail-floating-actions {
+    top: 72px;
+    left: 16px;
+    right: 16px;
     justify-content: center;
   }
 

@@ -1,16 +1,17 @@
 import { Linkedin, Instagram } from "lucide-react";
+import { VEGA_CONTACTS, VEGA_SOCIAL_HREF } from "@/utils/contacts";
 
 const SOCIALS = [
   {
     name: "LinkedIn",
-    handle: "vegaiklimlendirme",
-    href: "https://www.linkedin.com/company/vegaiklimlendirme",
+    handle: VEGA_CONTACTS.linkedin,
+    href: VEGA_SOCIAL_HREF.linkedin,
     Icon: Linkedin,
   },
   {
     name: "Instagram",
-    handle: "vega.enerji",
-    href: "https://instagram.com/vega.enerji",
+    handle: VEGA_CONTACTS.instagram,
+    href: VEGA_SOCIAL_HREF.instagram,
     Icon: Instagram,
   },
 ];

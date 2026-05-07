@@ -1,18 +1,21 @@
-import { useState, useEffect } from "react";
-import { Link } from "@tanstack/react-router";
-import { ShoppingCart } from "lucide-react";
+import { useState, useEffect, type MouseEvent } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Moon, ShoppingCart, Sun } from "lucide-react";
 import { useCart } from "@/providers/CartContext";
+import { useUiTheme } from "@/context/UiThemeContext";
+import { navigateToHashSection } from "@/utils/navigateToHashSection";
 
-const NAV_LINKS = [
-  { label: "Anasayfa",   href: "/"            },
-  { label: "Hakkımızda", href: "/#hakkimizda" },
-  { label: "Ürünler",    href: "/#urunler"    },
-  { label: "İletişim",   href: "/#iletisim"   },
+const HASH_LINKS: { label: string; id: string }[] = [
+  { label: "Hakkımızda", id: "hakkimizda" },
+  { label: "Ürünler", id: "urunler" },
+  { label: "İletişim", id: "iletisim" },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { count, openCart } = useCart();
+  const { mode, toggleMode } = useUiTheme();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => {
@@ -23,18 +26,9 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
-  ) => {
-    if (href.startsWith("/#")) {
-      e.preventDefault();
-      const id = href.slice(2);
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
-    }
+  const onHashNav = (e: MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    navigateToHashSection(navigate, id);
   };
 
   return (
@@ -43,9 +37,7 @@ export function Navbar() {
       role="navigation"
       aria-label="Ana navigasyon"
     >
-      {/* Logo */}
-      <Link to="/" className="grav-nav-logo" aria-label="Vega İklimlendirme Ana Sayfa">
-        {/* Blinking status indicator */}
+      <Link to="/" className="grav-nav-logo" aria-label="Vega İklimlendirme Ana Sayfa" preload="intent" preloadDelay={0}>
         <span
           aria-hidden="true"
           style={{
@@ -57,13 +49,7 @@ export function Navbar() {
             animation: "status-blink 2.2s ease-in-out infinite",
           }}
         />
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 32 32"
-          fill="none"
-          aria-hidden="true"
-        >
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
           <polygon
             points="16,3 29,27 3,27"
             fill="none"
@@ -71,39 +57,46 @@ export function Navbar() {
             strokeWidth="2.2"
             strokeLinejoin="round"
           />
-          <polygon
-            points="16,11 23,24 9,24"
-            fill="currentColor"
-            opacity="0.35"
-          />
+          <polygon points="16,11 23,24 9,24" fill="currentColor" opacity="0.35" />
         </svg>
         <div className="grav-nav-wordmark">
-          <span className="grav-nav-brand" style={{ fontFamily: "var(--font-premium-display)", fontWeight: 700, letterSpacing: "-0.01em" }}>Vega</span>
-          <span className="grav-nav-sub" style={{ fontFamily: "var(--font-premium-display)", letterSpacing: "0.01em" }}>İklimlendirme</span>
+          <span
+            className="grav-nav-brand"
+            style={{ fontFamily: "var(--font-premium-display)", fontWeight: 700, letterSpacing: "-0.01em" }}
+          >
+            Vega
+          </span>
+          <span className="grav-nav-sub" style={{ fontFamily: "var(--font-premium-display)", letterSpacing: "0.01em" }}>
+            İklimlendirme
+          </span>
         </div>
       </Link>
 
-      {/* Center links */}
       <ul className="grav-nav-links">
-        {NAV_LINKS.map((link) => (
-          <li key={link.href}>
-            <a
-              href={link.href}
-              onClick={(e) => handleNavClick(e, link.href)}
-            >
+        <li>
+          <Link to="/" preload="intent" preloadDelay={0}>
+            Anasayfa
+          </Link>
+        </li>
+        {HASH_LINKS.map((link) => (
+          <li key={link.id}>
+            <a href={`/#${link.id}`} onClick={(e) => onHashNav(e, link.id)}>
               {link.label}
             </a>
           </li>
         ))}
       </ul>
 
-      {/* Actions */}
       <div className="grav-nav-actions">
         <button
-          className="grav-nav-cart"
-          onClick={openCart}
-          aria-label={`Sepet — ${count} ürün`}
+          type="button"
+          className="grav-nav-theme"
+          onClick={toggleMode}
+          aria-label={mode === "dark" ? "Açık temaya geç" : "Koyu temaya geç"}
         >
+          {mode === "light" ? <Sun size={18} aria-hidden /> : <Moon size={18} aria-hidden />}
+        </button>
+        <button className="grav-nav-cart" onClick={openCart} aria-label={`Sepet — ${count} ürün`}>
           <ShoppingCart size={18} />
           {count > 0 && (
             <span className="grav-cart-badge" aria-hidden="true">
@@ -112,11 +105,9 @@ export function Navbar() {
           )}
         </button>
         <button
+          type="button"
           className="grav-nav-cta"
-          onClick={() => {
-            const el = document.getElementById("iletisim");
-            el?.scrollIntoView({ behavior: "smooth" });
-          }}
+          onClick={() => navigateToHashSection(navigate, "iletisim")}
           aria-label="Teklif Al — İletişim bölümüne git"
         >
           Teklif Al

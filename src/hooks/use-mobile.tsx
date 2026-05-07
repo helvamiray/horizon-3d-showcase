@@ -1,6 +1,7 @@
 import * as React from "react";
+import { LAYOUT_DESKTOP_MIN_PX } from "@/constants/layoutBreakpoint";
 
-const MOBILE_BREAKPOINT = 768;
+const MOBILE_BREAKPOINT = LAYOUT_DESKTOP_MIN_PX;
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined);

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ArrowRight, MapPin, Instagram, Linkedin, Phone, Mail } from "lucide-react";
 import { useMagneticButton } from "@/hooks/useMagneticButton";
-import { VEGA_CONTACTS, openInstagram, openLinkedIn, openMaps } from "@/utils/contacts";
+import { VEGA_CONTACTS, VEGA_SOCIAL_HREF, openMaps } from "@/utils/contacts";
+import { contactService } from "@/lib/contactService";
 
 interface FormState {
   name: string;
@@ -21,6 +22,12 @@ const QuoteSimple = () => {
 
   const handleSubmit = () => {
     if (!form.name.trim() || !form.email.trim()) return;
+    contactService.create({
+      type: "contact",
+      name: form.name.trim(),
+      email: form.email.trim(),
+      message: form.message.trim() || undefined,
+    });
     const subject = encodeURIComponent(`Teklif Talebi — ${form.name}`);
     const body = encodeURIComponent(
       `Ad Soyad: ${form.name}\nE-posta: ${form.email}\n\nMesaj:\n${form.message}`
@@ -32,11 +39,10 @@ const QuoteSimple = () => {
   return (
     <section
       id="iletisim"
+      className="contact-section"
       style={{
-        background: "var(--terminal-bg, #020608)",
         padding: "5rem 1.5rem",
         position: "relative",
-        zIndex: 3000,
         scrollMarginTop: "72px",
         borderTop: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
       }}
@@ -52,15 +58,15 @@ const QuoteSimple = () => {
         }}
         className="contact-grid"
       >
-        {/* Left: contact info */}
-        <div data-reveal>
+        {/* Left: contact info — no data-reveal: keep always visible (scroll GSAP could leave opacity 0) */}
+        <div>
           <span
             style={{
               fontFamily: "var(--font-premium-mono)",
               fontSize: "11px",
               letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.4)",
+              color: "var(--quote-eyebrow)",
               display: "block",
               marginBottom: "16px",
             }}
@@ -72,9 +78,7 @@ const QuoteSimple = () => {
               fontFamily: "var(--font-premium-display)",
               fontWeight: 800,
               fontSize: "clamp(1.75rem, 3vw, 2.5rem)",
-              color: "white",
-              letterSpacing: "-0.025em",
-              margin: "0 0 1.25rem",
+              color: "var(--text-on-terminal-strong)",
               lineHeight: 1.15,
             }}
           >
@@ -86,8 +90,7 @@ const QuoteSimple = () => {
               fontFamily: "var(--font-premium-body)",
               fontSize: "1rem",
               lineHeight: 1.7,
-              color: "rgba(255,255,255,0.55)",
-              margin: "0 0 2.5rem",
+              color: "var(--quote-body)",
               maxWidth: "380px",
             }}
           >
@@ -105,17 +108,12 @@ const QuoteSimple = () => {
               gap: "10px",
               background: "none",
               border: "none",
-              color: "rgba(255,255,255,0.7)",
-              cursor: "pointer",
-              padding: 0,
-              fontFamily: "var(--font-premium-body)",
-              fontSize: "0.9375rem",
-              marginBottom: "2rem",
+              color: "var(--quote-link)",
               transition: "color 200ms ease",
               textAlign: "left",
             }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "white")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.7)")}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--quote-link-hover)")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--quote-link)")}
           >
             <MapPin size={16} style={{ color: "var(--gold, #c9a84c)", flexShrink: 0 }} />
             <span>
@@ -143,14 +141,14 @@ const QuoteSimple = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                color: "rgba(255,255,255,0.7)",
+                color: "var(--quote-link)",
                 textDecoration: "none",
                 fontFamily: "var(--font-premium-body)",
                 fontSize: "0.9375rem",
                 transition: "color 200ms ease",
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "white")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.7)")}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)")}
             >
               <Phone size={15} style={{ color: "var(--gold, #c9a84c)", flexShrink: 0 }} />
               {VEGA_CONTACTS.phone}
@@ -161,14 +159,14 @@ const QuoteSimple = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
-                color: "rgba(255,255,255,0.7)",
+                color: "var(--quote-link)",
                 textDecoration: "none",
                 fontFamily: "var(--font-premium-body)",
                 fontSize: "0.9375rem",
                 transition: "color 200ms ease",
               }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "white")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.7)")}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)")}
             >
               <Mail size={15} style={{ color: "var(--gold, #c9a84c)", flexShrink: 0 }} />
               {VEGA_CONTACTS.email}
@@ -177,71 +175,77 @@ const QuoteSimple = () => {
 
           {/* Social links */}
           <div style={{ display: "flex", gap: "0.75rem" }}>
-            <button
-              onClick={openInstagram}
+            <a
+              href={VEGA_SOCIAL_HREF.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Instagram"
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "var(--quote-social-bg)",
+                border: "1px solid var(--quote-social-border)",
                 borderRadius: "10px",
                 padding: "10px 16px",
-                color: "rgba(255,255,255,0.7)",
+                color: "var(--quote-link)",
                 cursor: "pointer",
                 fontFamily: "var(--font-premium-body)",
                 fontSize: "0.8125rem",
                 fontWeight: 500,
                 transition: "background 200ms ease, color 200ms ease",
+                textDecoration: "none",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.12)";
-                (e.currentTarget as HTMLButtonElement).style.color = "white";
+                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg-hover)";
+                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)";
-                (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.7)";
+                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg)";
+                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)";
               }}
             >
               <Instagram size={15} />
               Instagram
-            </button>
-            <button
-              onClick={openLinkedIn}
+            </a>
+            <a
+              href={VEGA_SOCIAL_HREF.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="LinkedIn"
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "var(--quote-social-bg)",
+                border: "1px solid var(--quote-social-border)",
                 borderRadius: "10px",
                 padding: "10px 16px",
-                color: "rgba(255,255,255,0.7)",
+                color: "var(--quote-link)",
                 cursor: "pointer",
                 fontFamily: "var(--font-premium-body)",
                 fontSize: "0.8125rem",
                 fontWeight: 500,
                 transition: "background 200ms ease, color 200ms ease",
+                textDecoration: "none",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.12)";
-                (e.currentTarget as HTMLButtonElement).style.color = "white";
+                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg-hover)";
+                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.06)";
-                (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.7)";
+                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg)";
+                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)";
               }}
             >
               <Linkedin size={15} />
               LinkedIn
-            </button>
+            </a>
           </div>
         </div>
 
         {/* Right: 3-field form */}
-        <div data-reveal>
+        <div>
           {submitted ? (
             <div
               style={{
@@ -250,11 +254,11 @@ const QuoteSimple = () => {
                 alignItems: "center",
                 gap: "16px",
                 padding: "3rem 2rem",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--quote-card-bg)",
+                border: "1px solid var(--quote-card-border)",
                 borderRadius: "20px",
                 textAlign: "center",
-                color: "white",
+                color: "var(--text-on-terminal-strong)",
               }}
             >
               <span style={{ fontSize: "3rem" }}>✅</span>
@@ -271,7 +275,7 @@ const QuoteSimple = () => {
               <p
                 style={{
                   fontFamily: "var(--font-premium-body)",
-                  color: "rgba(255,255,255,0.6)",
+                  color: "var(--quote-body)",
                   margin: 0,
                   fontSize: "0.9375rem",
                 }}
@@ -282,8 +286,8 @@ const QuoteSimple = () => {
           ) : (
             <div
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--quote-card-bg)",
+                border: "1px solid var(--quote-card-border)",
                 borderRadius: "20px",
                 padding: "2.5rem",
                 display: "flex",
@@ -304,13 +308,13 @@ const QuoteSimple = () => {
                   required={field !== "email" ? true : true}
                   aria-label={placeholder.replace(" *", "")}
                   style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--quote-input-bg)",
+                    border: "1px solid var(--quote-input-border)",
                     borderRadius: "10px",
                     padding: "13px 16px",
                     fontSize: "14px",
                     fontFamily: "var(--font-premium-body)",
-                    color: "white",
+                    color: "var(--text-on-terminal-strong)",
                     outline: "none",
                     width: "100%",
                     boxSizing: "border-box",
@@ -322,7 +326,7 @@ const QuoteSimple = () => {
                   }
                   onBlur={(e) =>
                     ((e.currentTarget as HTMLInputElement).style.borderColor =
-                      "rgba(255,255,255,0.1)")
+                      "var(--quote-input-border)")
                   }
                 />
               ))}
@@ -333,13 +337,13 @@ const QuoteSimple = () => {
                 rows={4}
                 aria-label="Mesajınız"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "var(--quote-input-bg)",
+                  border: "1px solid var(--quote-input-border)",
                   borderRadius: "10px",
                   padding: "13px 16px",
                   fontSize: "14px",
                   fontFamily: "var(--font-premium-body)",
-                  color: "white",
+                  color: "var(--text-on-terminal-strong)",
                   outline: "none",
                   width: "100%",
                   boxSizing: "border-box",
@@ -353,11 +357,12 @@ const QuoteSimple = () => {
                 }
                 onBlur={(e) =>
                   ((e.currentTarget as HTMLTextAreaElement).style.borderColor =
-                    "rgba(255,255,255,0.1)")
+                    "var(--quote-input-border)")
                 }
               />
               <button
                 ref={btnRef}
+                className="quote-send-btn"
                 onClick={handleSubmit}
                 type="button"
                 aria-label="Mesaj gönder"
@@ -377,14 +382,7 @@ const QuoteSimple = () => {
                   transition: "background 280ms ease, box-shadow 280ms ease",
                   alignSelf: "flex-start",
                   willChange: "transform",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "var(--gold-light, #e8c96a)";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 24px rgba(201,168,76,0.4)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "var(--gold, #c9a84c)";
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+                  boxShadow: "none",
                 }}
               >
                 Mesaj Gönder

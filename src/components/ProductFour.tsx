@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { animate, spring } from "animejs";
@@ -55,6 +56,7 @@ const CARDS: CardDef[] = [
 ];
 
 const ProductFour = () => {
+  const navigate = useNavigate();
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef   = useRef<HTMLDivElement>(null);
 
@@ -176,11 +178,13 @@ const ProductFour = () => {
               el.style.borderColor = "var(--terminal-border, rgba(0,240,255,0.12))";
               el.style.boxShadow   = "none";
             }}
-            onClick={() => window.open(`/urunler/${card.slug}`, "_blank", "noopener,noreferrer")}
+            onClick={() => navigate({ to: "/urunler/$slug", params: { slug: card.slug } })}
             style={{
               position: "relative",
               background: "var(--terminal-surface, #080d14)",
-              border: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
+              borderTop: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
+              borderRight: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
+              borderBottom: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
               borderLeft: `3px solid ${card.accentColor}`,
               borderRadius: "8px",
               padding: "1.75rem 1.75rem 1.5rem",
@@ -264,9 +268,10 @@ const ProductFour = () => {
 
             {/* CTA */}
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                window.open(`/urunler/${card.slug}`, "_blank", "noopener,noreferrer");
+                navigate({ to: "/urunler/$slug", params: { slug: card.slug } });
               }}
               style={{
                 fontFamily: "var(--font-premium-mono)",

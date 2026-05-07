@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { HERO_VEGA_VIDEO } from "@/constants/videoAssets";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -97,10 +98,13 @@ export function GravityHero() {
         loop
         playsInline
         preload="metadata"
+        poster={HERO_VEGA_VIDEO.poster}
         className="hero-video"
-        src="/videos/vega_tanitim.mp4"
         aria-hidden="true"
-      />
+      >
+        <source src={HERO_VEGA_VIDEO.webm} type="video/webm" />
+        <source src={HERO_VEGA_VIDEO.mp4} type="video/mp4" />
+      </video>
 
       {/* Dark overlay */}
       <div className="hero-overlay" aria-hidden="true" />

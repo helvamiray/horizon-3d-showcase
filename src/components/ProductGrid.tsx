@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Zap, Thermometer, Wind } from "lucide-react";
 import { getVideoForProduct } from "@/constants/productVideos";
+import { DESKTOP_VIDEO_MEDIA } from "@/constants/videoAssets";
 import { preloadVideo } from "@/utils/videoPreload";
 
 interface ProductGridProps {
@@ -62,7 +63,11 @@ const ProductCard = ({
     <article
       className={`pcard${isCooling ? " card-cooling" : ""}`}
       onClick={() => onSelect(p.id)}
-      onMouseEnter={() => preloadVideo(getVideoForProduct(p.category))}
+      onMouseEnter={() => {
+        if (typeof window !== "undefined" && window.matchMedia(DESKTOP_VIDEO_MEDIA).matches) {
+          preloadVideo(getVideoForProduct(p.category));
+        }
+      }}
       style={active ? { boxShadow: `0 0 0 2px ${accentColor}`, borderColor: accentColor } : undefined}
       aria-current={active ? "true" : undefined}
     >
@@ -74,6 +79,7 @@ const ProductCard = ({
           loop
           autoPlay
           playsInline
+          preload="none"
           poster={p.image}
           aria-hidden="true"
           style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 600ms var(--ease-premium)" }}

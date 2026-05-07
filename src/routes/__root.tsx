@@ -2,6 +2,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { CartProvider } from "@/providers/CartContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { UiThemeProvider } from "@/context/UiThemeContext";
 import CartSidebar from "@/components/CartSidebar";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -60,13 +61,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <LanguageProvider>
-      <ThemeProvider>
-        <CartProvider>
-          <Outlet />
-          <CartSidebar />
-          <Toaster />
-        </CartProvider>
-      </ThemeProvider>
+      <UiThemeProvider>
+        <ThemeProvider>
+          <CartProvider>
+            <Outlet />
+            <CartSidebar />
+            <Toaster />
+          </CartProvider>
+        </ThemeProvider>
+      </UiThemeProvider>
     </LanguageProvider>
   );
 }

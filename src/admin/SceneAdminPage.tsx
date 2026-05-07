@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { type AdminProduct, productService } from "@/lib/adminProductService";
 import { sceneComponentService, type SceneComponent } from "@/lib/sceneComponentService";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 
 const ADMIN_AUTH_KEY = "vega_admin_authed";
 
@@ -52,13 +53,18 @@ const SceneAdminPage = () => {
     refresh();
   };
 
+  const logout = () => {
+    if (typeof window !== "undefined") window.sessionStorage.removeItem(ADMIN_AUTH_KEY);
+    window.location.href = "/admin";
+  };
+
   if (!isAuthed) {
     return (
       <div className="min-h-screen grid place-items-center bg-[#090f1d] text-white p-6">
         <div className="rounded-xl border border-cyan/30 bg-[#0f1a2d] p-6">
-          <p>Admin authentication required.</p>
+          <p>Yönetici oturumu gerekli.</p>
           <Link to="/admin" className="mt-3 inline-block text-cyan underline">
-            /admin login sayfasına git
+            /admin giriş sayfasına git
           </Link>
         </div>
       </div>
@@ -66,30 +72,38 @@ const SceneAdminPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#090f1d] text-white p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">3D Sahne Yönetimi</h1>
-          <p className="text-sm text-white/60">Kaydet ve sayfayı yenileyerek sonucu kontrol edin.</p>
+    <>
+    <AdminLayout
+      title="3D Sahne Yönetimi"
+      subtitle="Kaydet ve sayfayı yenileyerek sonucu kontrol edin."
+      onLogout={logout}
+    >
+      <div className="p-6 space-y-6">
+        <div className="rounded-xl border border-cyan/25 bg-[#0c1526]/80 p-4 text-sm text-white/85">
+          <h3 className="text-base font-semibold text-cyan mb-2 tracking-wide">RULES</h3>
+          <ul className="list-disc space-y-1 pl-5 text-white/75">
+            <li>Do not touch Villa3D or any public-facing components</li>
+            <li>
+              All pages check sessionStorage <code className="text-cyan/90">vega_admin_authed === &quot;1&quot;</code>
+            </li>
+            <li>TypeScript strict — no any types</li>
+            <li>npm run build must pass with zero errors</li>
+          </ul>
         </div>
-        <Link to="/admin" className="rounded-md border border-white/20 px-3 py-2 text-sm hover:bg-white/10">
-          Products Admin
-        </Link>
-      </div>
 
-      <div className="overflow-x-auto rounded-xl border border-white/10">
+        <div className="overflow-x-auto rounded-xl border border-white/10">
         <table className="w-full min-w-[1200px] text-sm">
           <thead className="bg-[#0f1a2d] text-white/70">
             <tr>
-              <th className="p-3 text-left">Component ID</th>
-              <th className="p-3 text-left">Label</th>
-              <th className="p-3 text-left">Type</th>
-              <th className="p-3 text-left">Linked Product</th>
+              <th className="p-3 text-left">Bileşen ID</th>
+              <th className="p-3 text-left">Etiket</th>
+              <th className="p-3 text-left">Tür</th>
+              <th className="p-3 text-left">Bağlı ürün</th>
               <th className="p-3 text-left">X</th>
               <th className="p-3 text-left">Y</th>
               <th className="p-3 text-left">Z</th>
-              <th className="p-3 text-left">Visible</th>
-              <th className="p-3 text-left">Edit</th>
+              <th className="p-3 text-left">Görünür</th>
+              <th className="p-3 text-left">Düzenle</th>
             </tr>
           </thead>
           <tbody>
@@ -113,25 +127,26 @@ const SceneAdminPage = () => {
                 </td>
                 <td className="p-3">
                   <button type="button" className="rounded border border-white/20 px-2 py-1" onClick={() => setEditing(item)}>
-                    Edit
+                    Düzenle
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       </div>
-
+    </AdminLayout>
       {editing && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
           <div className="w-full max-w-2xl rounded-xl border border-cyan/30 bg-[#0f1a2d] p-6 space-y-4">
-            <h2 className="text-xl font-semibold">{editing.id} düzenle</h2>
+            <h2 className="text-xl font-semibold">{editing.id} — düzenle</h2>
             <label className="block space-y-1">
-              <span className="text-sm text-white/70">Label</span>
+              <span className="text-sm text-white/70">Etiket</span>
               <input value={editing.label} onChange={(e) => setEditing((prev) => (prev ? { ...prev, label: e.target.value } : prev))} className="w-full rounded border border-white/20 bg-[#0c1526] px-3 py-2" />
             </label>
             <label className="block space-y-1">
-              <span className="text-sm text-white/70">Linked Product</span>
+              <span className="text-sm text-white/70">Bağlı ürün</span>
               <select
                 value={editing.linkedProductId ?? ""}
                 onChange={(e) =>
@@ -143,7 +158,7 @@ const SceneAdminPage = () => {
                 }
                 className="w-full rounded border border-white/20 bg-[#0c1526] px-3 py-2"
               >
-                <option value="">None</option>
+                <option value="">Yok</option>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
                     {product.name}
@@ -152,7 +167,7 @@ const SceneAdminPage = () => {
               </select>
             </label>
             <label className="block space-y-1">
-              <span className="text-sm text-white/70">Thumbnail</span>
+              <span className="text-sm text-white/70">Önizleme görseli</span>
               <input
                 type="file"
                 accept="image/*"
@@ -178,7 +193,7 @@ const SceneAdminPage = () => {
                   )
                 }
               />
-              <span>Visible</span>
+              <span>Görünür</span>
             </label>
             <div className="flex justify-end gap-2">
               <button
@@ -186,16 +201,16 @@ const SceneAdminPage = () => {
                 className="rounded border border-white/20 px-3 py-2"
                 onClick={() => setEditing(null)}
               >
-                Cancel
+                İptal
               </button>
               <button type="button" className="rounded bg-cyan px-3 py-2 text-black" onClick={saveEdit}>
-                Save
+                Kaydet
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+  </>
   );
 };
 

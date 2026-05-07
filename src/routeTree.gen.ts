@@ -9,11 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunlerSlugRouteImport } from './routes/urunler.$slug'
 import { Route as AdminSceneRouteImport } from './routes/admin.scene'
+import { Route as AdminProjectsRouteImport } from './routes/admin.projects'
+import { Route as AdminContactRouteImport } from './routes/admin.contact'
 
+const IletisimRoute = IletisimRouteImport.update({
+  id: '/iletisim',
+  path: '/iletisim',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -34,16 +42,32 @@ const AdminSceneRoute = AdminSceneRouteImport.update({
   path: '/scene',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProjectsRoute = AdminProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminContactRoute = AdminContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/iletisim': typeof IletisimRoute
+  '/admin/contact': typeof AdminContactRoute
+  '/admin/projects': typeof AdminProjectsRoute
   '/admin/scene': typeof AdminSceneRoute
   '/urunler/$slug': typeof UrunlerSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/iletisim': typeof IletisimRoute
+  '/admin/contact': typeof AdminContactRoute
+  '/admin/projects': typeof AdminProjectsRoute
   '/admin/scene': typeof AdminSceneRoute
   '/urunler/$slug': typeof UrunlerSlugRoute
 }
@@ -51,25 +75,58 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/iletisim': typeof IletisimRoute
+  '/admin/contact': typeof AdminContactRoute
+  '/admin/projects': typeof AdminProjectsRoute
   '/admin/scene': typeof AdminSceneRoute
   '/urunler/$slug': typeof UrunlerSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/admin/scene' | '/urunler/$slug'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/iletisim'
+    | '/admin/contact'
+    | '/admin/projects'
+    | '/admin/scene'
+    | '/urunler/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/admin/scene' | '/urunler/$slug'
-  id: '__root__' | '/' | '/admin' | '/admin/scene' | '/urunler/$slug'
+  to:
+    | '/'
+    | '/admin'
+    | '/iletisim'
+    | '/admin/contact'
+    | '/admin/projects'
+    | '/admin/scene'
+    | '/urunler/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/iletisim'
+    | '/admin/contact'
+    | '/admin/projects'
+    | '/admin/scene'
+    | '/urunler/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  IletisimRoute: typeof IletisimRoute
   UrunlerSlugRoute: typeof UrunlerSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/iletisim': {
+      id: '/iletisim'
+      path: '/iletisim'
+      fullPath: '/iletisim'
+      preLoaderRoute: typeof IletisimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -98,14 +155,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSceneRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/projects': {
+      id: '/admin/projects'
+      path: '/projects'
+      fullPath: '/admin/projects'
+      preLoaderRoute: typeof AdminProjectsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/contact': {
+      id: '/admin/contact'
+      path: '/contact'
+      fullPath: '/admin/contact'
+      preLoaderRoute: typeof AdminContactRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminContactRoute: typeof AdminContactRoute
+  AdminProjectsRoute: typeof AdminProjectsRoute
   AdminSceneRoute: typeof AdminSceneRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminContactRoute: AdminContactRoute,
+  AdminProjectsRoute: AdminProjectsRoute,
   AdminSceneRoute: AdminSceneRoute,
 }
 
@@ -114,6 +189,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  IletisimRoute: IletisimRoute,
   UrunlerSlugRoute: UrunlerSlugRoute,
 }
 export const routeTree = rootRouteImport

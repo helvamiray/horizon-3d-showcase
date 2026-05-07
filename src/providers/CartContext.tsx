@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState, ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Product } from "@/data/products";
 
 export interface CartItem {
@@ -20,9 +28,51 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+const CART_STORAGE_KEY = "vega_cart";
+
+function parseStoredCart(raw: string | null): CartItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (row): row is CartItem =>
+        typeof row === "object" &&
+        row !== null &&
+        typeof (row as CartItem).qty === "number" &&
+        (row as CartItem).qty >= 1 &&
+        typeof (row as CartItem).product === "object" &&
+        (row as CartItem).product !== null &&
+        typeof (row as CartItem).product.id === "string"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function persistCart(items: CartItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    /* quota / private mode */
+  }
+}
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setItems(parseStoredCart(window.localStorage.getItem(CART_STORAGE_KEY)));
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    persistCart(items);
+  }, [items, hydrated]);
 
   const add = useCallback((product: Product, qty = 1) => {
     setItems((prev) => {

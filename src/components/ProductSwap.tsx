@@ -9,16 +9,6 @@ import { useTheme, type ProductTheme } from "@/context/ThemeContext";
 import Mini3DPreview from "@/components/Mini3DPreview";
 import { getCategoryRender } from "@/components/ProductRenders";
 
-const EMOJI_MAP: Record<string, string> = {
-  "isi-pompasi": "♨️",
-  klima:         "❄️",
-  yangin:        "🚒",
-  kombi:         "🔥",
-  radyator:      "🌡️",
-  tank:          "💧",
-  boru:          "⚡",
-};
-
 const THEME_MAP: Record<string, ProductTheme> = {
   "isi-pompasi": "heatpump",
   klima:         "cooling",
@@ -173,8 +163,7 @@ const ProductSwap = () => {
               aria-pressed={selected.id === p.id}
               aria-label={lang === "tr" ? p.name : p.name_en}
             >
-              <span aria-hidden="true">{EMOJI_MAP[p.category] ?? "◈"}</span>
-              <span>{CATEGORY_LABEL[p.category][lang]}</span>
+              {CATEGORY_LABEL[p.category][lang]}
             </button>
           ))}
         </div>
@@ -238,7 +227,7 @@ const ProductSwap = () => {
               {specs.map((s, i) => (
                 <div key={i} className="swap-spec-row">
                   <span className="swap-spec-bullet" aria-hidden="true">
-                    ◈
+                    ·
                   </span>
                   <span className="swap-spec-text">{s}</span>
                 </div>
