@@ -1,20 +1,23 @@
 /**
  * AnimatedStats
  * ──────────────────────────────────────────────────────────────────────
- * Anime.js createTimer–driven counters.
- * Numbers count up with ease-out once the section enters the viewport.
- * Inspired by animejs.com's live timer demo.
+ * Premium trust-metrics band: glass cards, subtle accents, GSAP count-up +
+ * staggered fade-up on viewport entry.
  */
 import { useEffect, useRef } from "react";
-import { animate } from "animejs";
+import gsap from "gsap";
+
+import { useLanguage } from "@/i18n/LanguageContext";
+import type { TKey } from "@/i18n/translations";
+
+type StatTone = "cyan" | "emerald" | "amber" | "coral" | "slate";
 
 interface Stat {
   id: string;
   end: number;
   suffix: string;
-  label: string;
-  sublabel: string;
-  color: string;
+  labelKey: TKey;
+  tone: StatTone;
 }
 
 const STATS: Stat[] = [
@@ -22,47 +25,45 @@ const STATS: Stat[] = [
     id: "projects",
     end: 500,
     suffix: "+",
-    label: "Tamamlanan",
-    sublabel: "Proje",
-    color: "var(--electric-cyan, #00f0ff)",
+    labelKey: "stats.metric.projects",
+    tone: "cyan",
   },
   {
     id: "satisfaction",
     end: 98,
     suffix: "%",
-    label: "Müşteri",
-    sublabel: "Memnuniyeti",
-    color: "var(--cyber-green, #00ff88)",
+    labelKey: "stats.metric.satisfaction",
+    tone: "emerald",
   },
   {
     id: "experience",
     end: 12,
     suffix: "+",
-    label: "Yıl",
-    sublabel: "Deneyim",
-    color: "var(--gold, #c9a84c)",
+    labelKey: "stats.metric.experience",
+    tone: "amber",
   },
   {
     id: "team",
     end: 50,
     suffix: "+",
-    label: "Uzman",
-    sublabel: "Ekip",
-    color: "#e07840",
+    labelKey: "stats.metric.team",
+    tone: "coral",
   },
   {
     id: "sectors",
     end: 3,
     suffix: "",
-    label: "Faaliyet",
-    sublabel: "Sektörü",
-    color: "rgba(255,255,255,0.75)",
+    labelKey: "stats.metric.sectors",
+    tone: "slate",
   },
 ];
 
-const AnimatedStats = () => {
+export function AnimatedStats() {
+  const { t } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
-  const started    = useRef(false);
+  const cardRefs = useRef<(HTMLElement | null)[]>([]);
+  const numRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const started = useRef(false);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -70,44 +71,58 @@ const AnimatedStats = () => {
 
     const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const runCounters = () => {
+    const run = () => {
       if (started.current) return;
       started.current = true;
 
       STATS.forEach((stat, i) => {
-        const el = document.getElementById(`stat-num-${stat.id}`);
-        if (!el) return;
+        const numEl = numRefs.current[i];
+        const cardEl = cardRefs.current[i];
+        if (!numEl || !cardEl) return;
 
         if (!motionOk) {
-          el.textContent = stat.end + stat.suffix;
+          gsap.set(cardEl, { y: 0, opacity: 1 });
+          numEl.textContent = stat.end + stat.suffix;
           return;
         }
 
-        // Use animate() on a plain JS object — then read its value each frame
-        const counter = { value: 0 };
-        animate(counter, {
-          value: stat.end,
-          duration: 2200,
-          delay: i * 120,          // stagger
-          easing: "easeOutExpo",
-          onUpdate: () => {
-            el.textContent = Math.round(counter.value) + stat.suffix;
+        const counter = { v: 0 };
+        const tl = gsap.timeline({ delay: i * 0.08, defaults: { ease: "power3.out" } });
+
+        gsap.set(cardEl, { y: 36, opacity: 0 });
+        numEl.textContent = `0${stat.suffix}`;
+
+        tl.to(cardEl, {
+          y: 0,
+          opacity: 1,
+          duration: 0.72,
+          ease: "power3.out",
+        }).to(
+          counter,
+          {
+            v: stat.end,
+            duration: 1.85,
+            ease: "power2.out",
+            onUpdate: () => {
+              numEl.textContent = Math.round(counter.v) + stat.suffix;
+            },
+            onComplete: () => {
+              numEl.textContent = stat.end + stat.suffix;
+            },
           },
-          onComplete: () => {
-            el.textContent = stat.end + stat.suffix; // clamp final value
-          },
-        });
+          "-=0.42",
+        );
       });
     };
 
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          runCounters();
+          run();
           io.disconnect();
         }
       },
-      { threshold: 0.35 }
+      { threshold: 0.2, rootMargin: "0px 0px -6% 0px" },
     );
 
     io.observe(section);
@@ -117,111 +132,49 @@ const AnimatedStats = () => {
   return (
     <section
       ref={sectionRef}
-      style={{
-        background: "var(--terminal-surface, #080d14)",
-        borderTop:    "1px solid var(--terminal-border, rgba(0,240,255,0.1))",
-        borderBottom: "1px solid var(--terminal-border, rgba(0,240,255,0.1))",
-        padding: "clamp(40px, 6vw, 72px) clamp(20px, 6vw, 80px)",
-        position: "relative",
-        overflow: "hidden",
-      }}
+      className="animated-stats-section"
+      aria-labelledby="trust-stats-heading"
     >
-      {/* Glowing scan-line decoration */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: 0,
-          right: 0,
-          height: "1px",
-          background:
-            "linear-gradient(90deg, transparent 0%, var(--electric-cyan,#00f0ff) 30%, var(--electric-cyan,#00f0ff) 70%, transparent 100%)",
-          opacity: 0.04,
-          transform: "translateY(-50%)",
-          pointerEvents: "none",
-        }}
-      />
+      <div className="animated-stats-section__ambient" aria-hidden>
+        <span className="animated-stats-section__orb animated-stats-section__orb--1" />
+        <span className="animated-stats-section__orb animated-stats-section__orb--2" />
+        <span className="animated-stats-section__orb animated-stats-section__orb--3" />
+      </div>
 
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-          gap: "0",
-        }}
-      >
-        {STATS.map((stat, i) => (
-          <div
-            key={stat.id}
-            style={{
-              padding: "clamp(20px, 3vw, 36px) clamp(16px, 2.5vw, 32px)",
-              borderRight:
-                i < STATS.length - 1
-                  ? "1px solid var(--terminal-border, rgba(0,240,255,0.1))"
-                  : "none",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "6px",
-              position: "relative",
-            }}
-          >
-            {/* Animated number */}
-            <span
-              id={`stat-num-${stat.id}`}
-              style={{
-                fontFamily: "var(--font-premium-mono)",
-                fontSize: "clamp(36px, 5vw, 68px)",
-                fontWeight: 700,
-                color: stat.color,
-                letterSpacing: "-0.04em",
-                lineHeight: 1,
-                textShadow: `0 0 28px ${stat.color}55`,
-                tabularNums: "tabular-nums",
-              } as React.CSSProperties}
-            >
-              0{stat.suffix}
-            </span>
+      <div className="animated-stats-section__inner">
+        <header className="animated-stats-section__header">
+          <h2 id="trust-stats-heading" className="animated-stats-section__title">
+            {t("stats.section.title")}
+          </h2>
+          <p className="animated-stats-section__subtitle">{t("stats.section.subtitle")}</p>
+        </header>
 
-            {/* Label */}
-            <span
-              style={{
-                fontFamily: "var(--font-premium-mono)",
-                fontSize: "10px",
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.38)",
-                textAlign: "center",
-                lineHeight: 1.6,
-              }}
-            >
-              {stat.label}
-              <br />
-              <strong style={{ color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>
-                {stat.sublabel}
-              </strong>
-            </span>
-
-            {/* Accent dot */}
-            <span
-              aria-hidden="true"
-              style={{
-                display: "block",
-                width: "4px",
-                height: "4px",
-                borderRadius: "50%",
-                background: stat.color,
-                boxShadow: `0 0 8px ${stat.color}`,
-                marginTop: "4px",
-              }}
-            />
-          </div>
-        ))}
+        <ul className="animated-stats-section__grid">
+          {STATS.map((stat, i) => (
+            <li key={stat.id}>
+              <article
+                className={`animated-stats-card animated-stats-card--${stat.tone}`}
+                ref={(el) => {
+                  cardRefs.current[i] = el;
+                }}
+                aria-label={`${t(stat.labelKey)}, ${stat.end}${stat.suffix}`}
+              >
+                <span
+                  ref={(el) => {
+                    numRefs.current[i] = el;
+                  }}
+                  id={`stat-num-${stat.id}`}
+                  className="animated-stats-card__value"
+                  aria-hidden="true"
+                >
+                  0{stat.suffix}
+                </span>
+                <p className="animated-stats-card__label">{t(stat.labelKey)}</p>
+              </article>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );
-};
-
-export default AnimatedStats;
+}

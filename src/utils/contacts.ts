@@ -7,6 +7,12 @@ export const VEGA_CONTACTS = {
   mapsQuery: "Vega İklimlendirme Şişli İstanbul",
 };
 
+/** HTTPS-only links — use these in `<a href>` or `openHttpsInTab` (reliable on iOS Safari). */
+export const VEGA_SOCIAL_HREF = {
+  instagram: `https://www.instagram.com/${VEGA_CONTACTS.instagram}/`,
+  linkedin: `https://www.linkedin.com/company/${VEGA_CONTACTS.linkedin}/`,
+} as const;
+
 function isMobileDevice(): boolean {
   if (typeof navigator === "undefined") return false;
   return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(
@@ -19,42 +25,23 @@ function isIOS(): boolean {
   return /iPhone|iPad/i.test(navigator.userAgent);
 }
 
-export function openInstagram(): void {
-  const { instagram } = VEGA_CONTACTS;
-  if (isMobileDevice()) {
-    const appUrl = `instagram://user?username=${instagram}`;
-    const webUrl = `https://www.instagram.com/${instagram}`;
-    const fallback = setTimeout(() => window.open(webUrl, "_blank"), 1500);
-    window.location.href = appUrl;
-    window.addEventListener("blur", () => clearTimeout(fallback), {
-      once: true,
-    });
-  } else {
-    window.open(
-      `https://www.instagram.com/${instagram}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
+/**
+ * Opens an https URL in a new tab, or same tab if the mobile browser blocks popups.
+ * Avoids custom schemes (`instagram://`, `linkedin://`) — Safari often reports them as invalid.
+ */
+function openHttpsInTab(url: string): void {
+  const win = window.open(url, "_blank", "noopener,noreferrer");
+  if (win == null) {
+    window.location.assign(url);
   }
 }
 
+export function openInstagram(): void {
+  openHttpsInTab(VEGA_SOCIAL_HREF.instagram);
+}
+
 export function openLinkedIn(): void {
-  const { linkedin } = VEGA_CONTACTS;
-  if (isMobileDevice()) {
-    const appUrl = `linkedin://company/${linkedin}`;
-    const webUrl = `https://www.linkedin.com/company/${linkedin}`;
-    const fallback = setTimeout(() => window.open(webUrl, "_blank"), 1500);
-    window.location.href = appUrl;
-    window.addEventListener("blur", () => clearTimeout(fallback), {
-      once: true,
-    });
-  } else {
-    window.open(
-      `https://www.linkedin.com/company/${linkedin}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  }
+  openHttpsInTab(VEGA_SOCIAL_HREF.linkedin);
 }
 
 export function openMaps(): void {

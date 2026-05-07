@@ -158,13 +158,16 @@ const CartSidebar = () => {
                     }}
                   >
                     <video
-                      src={product.video}
                       muted
                       loop
                       autoPlay
                       playsInline
+                      preload="metadata"
+                      poster={product.image}
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
+                    >
+                      <source src={product.video} type="video/mp4" />
+                    </video>
                   </div>
 
                   {/* Info */}

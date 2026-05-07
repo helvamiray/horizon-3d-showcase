@@ -5,7 +5,6 @@ import { useTheme, type ProductTheme } from "@/context/ThemeContext";
 
 interface CatalogItem {
   key: string;
-  emoji: string;
   label: string;
   labelEn: string;
   desc: string;
@@ -17,7 +16,6 @@ interface CatalogItem {
 const CATALOG_ITEMS: CatalogItem[] = [
   {
     key: "klima",
-    emoji: "❄️",
     label: "Klima",
     labelEn: "AC & Cooling",
     desc: "Daikin VRF ve inverter duvar tipi split klima sistemleri. A+++ enerji sınıfı, Wi-Fi kontrol.",
@@ -27,7 +25,6 @@ const CATALOG_ITEMS: CatalogItem[] = [
   },
   {
     key: "fancoil",
-    emoji: "💨",
     label: "Fancoil",
     labelEn: "Fancoil",
     desc: "Daikin gizli tavan tipi ve konsol fancoil üniteleri. Sessiz çalışma, 2/4 borulu.",
@@ -37,7 +34,6 @@ const CATALOG_ITEMS: CatalogItem[] = [
   },
   {
     key: "isi-pompasi",
-    emoji: "♨️",
     label: "Isı Pompası",
     labelEn: "Heat Pump",
     desc: "Grant Aerona3 R-32 havadan suya ısı pompaları. COP 5.1'e kadar, A+++ sınıfı.",
@@ -47,7 +43,6 @@ const CATALOG_ITEMS: CatalogItem[] = [
   },
   {
     key: "kombi",
-    emoji: "🔥",
     label: "Kazan",
     labelEn: "Boiler",
     desc: "Viessmann ve Buderus yoğuşmalı kombiler. %109'a kadar verim, Modbus uyumlu.",
@@ -57,7 +52,6 @@ const CATALOG_ITEMS: CatalogItem[] = [
   },
   {
     key: "tank",
-    emoji: "💧",
     label: "Baylar ve Genleşme Tankı",
     labelEn: "Expansion Vessel",
     desc: "KODSAN paslanmaz tampon ve sıcak kullanım suyu tankları. AISI 316, solar serpantin.",
@@ -67,7 +61,6 @@ const CATALOG_ITEMS: CatalogItem[] = [
   },
   {
     key: "boru",
-    emoji: "⚡",
     label: "Pompa ve Hüloher",
     labelEn: "Pumps & Pipes",
     desc: "LOWARA ErP-A sirkülasyon pompaları ve FRANKISCHE PEX-A yerden ısıtma boru sistemleri.",
@@ -77,7 +70,6 @@ const CATALOG_ITEMS: CatalogItem[] = [
   },
   {
     key: "yangin",
-    emoji: "🚒",
     label: "Yangın Söndürme",
     labelEn: "Fire Suppression",
     desc: "Tyco onaylı ABC kuru kimyevi tozlu söndürücüler. TS EN 3 sertifikalı, tüm sınıflar.",
@@ -87,7 +79,6 @@ const CATALOG_ITEMS: CatalogItem[] = [
   },
   {
     key: "radyator",
-    emoji: "🌡️",
     label: "Radyatör",
     labelEn: "Radiators",
     desc: "E.C.A çelik panel radyatörler. EN 442 sertifikalı, düşük sıcaklık sistemleri için.",
@@ -119,7 +110,7 @@ const CatalogCard = ({ item }: { item: CatalogItem }) => {
       onClick={handleClick}
       onKeyDown={(e) => e.key === "Enter" && handleClick()}
     >
-      {/* Emoji + Diamond icon with SVG product miniature */}
+      {/* Product miniature */}
       <div
         style={{
           display: "flex",
@@ -129,12 +120,6 @@ const CatalogCard = ({ item }: { item: CatalogItem }) => {
           gap: "0.5rem",
         }}
       >
-        <span
-          style={{ fontSize: "2.25rem", lineHeight: 1 }}
-          aria-hidden="true"
-        >
-          {item.emoji}
-        </span>
         <div className="diamond-icon-wrap">
           <div className="diamond-icon-inner">
             <div style={{ width: "38px", height: "38px" }}>

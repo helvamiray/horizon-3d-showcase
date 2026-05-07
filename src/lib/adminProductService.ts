@@ -8,10 +8,14 @@ export interface ProductSpec {
 export interface AdminProduct {
   id: string;
   name: string;
+  /** Optional; public catalog falls back to `name` when empty. */
+  nameEn?: string;
   slug: string;
   category: string;
   brand: string;
   description: string;
+  /** Optional; public catalog falls back to `description` when empty. */
+  descriptionEn?: string;
   shortDescription: string;
   price?: number;
   currency?: ProductCurrency;

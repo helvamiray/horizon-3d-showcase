@@ -223,8 +223,10 @@ const AboutAccordion = () => (
             key={item.value}
             value={item.value}
             style={{
-              border: "none",
+              borderTop: "none",
+              borderRight: "none",
               borderBottom: "1px solid rgba(10,22,40,0.08)",
+              borderLeft: "none",
             }}
           >
             <AccordionTrigger

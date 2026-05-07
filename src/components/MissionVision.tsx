@@ -3,11 +3,13 @@
  * ─────────────────────────────────────────────────────────────────────────
  * • Scroll-driven Framer Motion reading effect on each paragraph.
  *   Text fades in → stays → fades out, replaced by a radial aura glow.
- * • Circular looping video (vega_tanitim.mp4) shown next to the text.
+ * • Circular looping video next to the text (muted, inline for iOS).
  * • No StatChip numbers at the bottom.
  */
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { ABOUT_CIRCLE_VIDEO } from "@/constants/videoAssets";
+import { useIsNarrowViewport } from "@/hooks/useIsNarrowViewport";
 
 /* ── Reading paragraph with Framer Motion scroll tracking ─────── */
 interface ReadingParaProps {
@@ -29,16 +31,12 @@ function ReadingPara({ text, accentColor = "var(--electric-cyan,#00f0ff)" }: Rea
   const auraScale   = useTransform(scrollYProgress, [0.6, 1],    [0.8, 1.2]);
 
   return (
-    <div ref={ref} style={{ position: "relative", minHeight: "80px" }}>
+    <div ref={ref} style={{ position: "relative", minHeight: "96px" }}>
       <motion.p
+        className="about-reading"
         style={{
           opacity: textOpacity,
           y: textY,
-          fontFamily: "var(--font-premium-body)",
-          fontSize: "clamp(15px, 1.5vw, 18px)",
-          lineHeight: 1.85,
-          color: "rgba(255,255,255,0.78)",
-          margin: 0,
           position: "relative",
           zIndex: 2,
         }}
@@ -64,25 +62,23 @@ function ReadingPara({ text, accentColor = "var(--electric-cyan,#00f0ff)" }: Rea
 }
 
 /* ── Column header ─────────────────────────────────────────────── */
-function ColHeader({ line, label, color }: { line: string; label: string; color: string }) {
+function ColHeader({
+  line,
+  label,
+  variant,
+}: {
+  line: string;
+  label: string;
+  variant: "mission" | "vision";
+}) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-      <span style={{
-        display: "inline-block", width: "32px", height: "2px",
-        background: color, boxShadow: `0 0 8px ${color}`,
-      }} />
-      <h3 style={{
-        fontFamily: "var(--font-premium-mono)", fontSize: "11px",
-        letterSpacing: "0.2em", textTransform: "uppercase", color, margin: 0,
-      }}>
-        {label}
-      </h3>
-      <span style={{
-        fontFamily: "var(--font-premium-mono)", fontSize: "9px",
-        color: "rgba(255,255,255,0.18)", letterSpacing: "0.1em",
-      }}>
-        {line}
-      </span>
+    <div className={`about-col-header about-col-header--${variant}`}>
+      <span
+        className={`about-col-accent ${variant === "mission" ? "about-col-accent--cyan" : "about-col-accent--gold"}`}
+        aria-hidden
+      />
+      <h3 className="about-col-label">{label}</h3>
+      <span className="about-col-index">{line}</span>
     </div>
   );
 }
@@ -99,117 +95,54 @@ const VISION =
   "ısı pompası ve düşük karbonlu çözümler alanında sektörün referans noktasına ulaşmayı " +
   "ve 1 000 tamamlanan proje sınırını aşmayı hedefliyoruz.";
 
-/* ── Circular video frame ──────────────────────────────────────── */
-function CircularVideo() {
-  return (
-    <div
-      style={{
-        position: "relative",
-        width: "clamp(180px, 22vw, 280px)",
-        height: "clamp(180px, 22vw, 280px)",
-        borderRadius: "50%",
-        overflow: "hidden",
-        flexShrink: 0,
-        border: "2px solid rgba(0,240,255,0.2)",
-        boxShadow: "0 0 40px rgba(0,240,255,0.08), inset 0 0 30px rgba(0,0,0,0.5)",
-        alignSelf: "center",
-      }}
-    >
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        src="/videos/vega_tanitim.mp4"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          opacity: 0.85,
-        }}
-      />
-      {/* Subtle overlay */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "radial-gradient(circle at center, transparent 40%, rgba(8,13,20,0.55) 100%)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-        }}
-      />
-    </div>
-  );
-}
-
 /* ── Main component ─────────────────────────────────────────────── */
 const MissionVision = () => {
+  const narrow = useIsNarrowViewport();
   return (
     <section
       id="hakkimizda"
+      className="about-section"
       style={{
-        background: "var(--terminal-surface, #080d14)",
         padding: "clamp(60px, 10vw, 120px) clamp(20px, 6vw, 80px)",
-        position: "relative",
-        overflow: "hidden",
         borderTop:    "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
         borderBottom: "1px solid var(--terminal-border, rgba(0,240,255,0.12))",
       }}
     >
-      {/* Section tag */}
-      <span aria-hidden="true" style={{
-        position: "absolute", top: "24px", right: "clamp(20px,6vw,80px)",
-        fontFamily: "var(--font-premium-mono)", fontSize: "11px",
-        color: "rgba(0,240,255,0.18)", letterSpacing: "0.2em",
-      }}>
-        SECTION.02 · ABOUT
-      </span>
-
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
         {/* Header */}
-        <p style={{
-          fontFamily: "var(--font-premium-mono)", fontSize: "11px",
-          letterSpacing: "0.28em", textTransform: "uppercase",
-          color: "var(--electric-cyan,#00f0ff)", margin: "0 0 0.75rem",
-        }}>
-          // 02.ABOUT
-        </p>
-        <h2 style={{
-          fontFamily: "var(--font-premium-display)",
-          fontSize: "clamp(28px,3.5vw,52px)", fontWeight: 800,
-          color: "#fff", letterSpacing: "-0.02em", margin: "0 0 3.5rem",
-        }}>
-          Hakkımızda
-        </h2>
+        <h2 className="about-hero-title">Hakkımızda</h2>
 
-        {/* Top layout: text columns + circular video */}
-        <div style={{
-          display: "flex",
-          gap: "3rem",
-          flexWrap: "wrap",
-          alignItems: "flex-start",
-        }}>
-          {/* Left: mission + vision */}
-          <div style={{
-            flex: "1 1 320px",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "3.5rem",
-          }}>
+        <div className="about-section-inner">
+          <div
+            className="about-text"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: "clamp(2.5rem, 5vw, 4rem)",
+            }}
+          >
             <div>
-              <ColHeader line="01" label="Misyonumuz" color="var(--electric-cyan,#00f0ff)" />
+              <ColHeader line="01" label="Misyonumuz" variant="mission" />
               <ReadingPara text={MISSION} accentColor="var(--electric-cyan,#00f0ff)" />
             </div>
             <div>
-              <ColHeader line="02" label="Vizyonumuz" color="var(--gold,#c9a84c)" />
+              <ColHeader line="02" label="Vizyonumuz" variant="vision" />
               <ReadingPara text={VISION} accentColor="var(--gold,#c9a84c)" />
             </div>
           </div>
 
-          {/* Right: circular video */}
-          <CircularVideo />
+          <div className="about-video-circle">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload={narrow ? "none" : "metadata"}
+              poster={ABOUT_CIRCLE_VIDEO.poster}
+            >
+              <source src={ABOUT_CIRCLE_VIDEO.mp4} type="video/mp4" />
+            </video>
+          </div>
         </div>
       </div>
     </section>

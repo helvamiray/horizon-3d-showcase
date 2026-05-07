@@ -3,47 +3,44 @@
  * ─────────────────────────────────────────────────────────────────────────
  * Compact product grid with:
  *  • Category filter tabs + live search
- *  • Default card: category icon (large) + product name only
+ *  • Default card: image or neutral placeholder + product name
  *  • Hover/focus: slides in full description + specs + CTA
  *  • NO PRICE anywhere
  */
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { PRODUCTS, CATEGORY_LABEL, type ProductCategory } from "@/data/products";
+import { Package } from "lucide-react";
+import { CATEGORY_LABEL, type Product, type ProductCategory } from "@/data/products";
+import { getProducts } from "@/lib/productService";
 
-/* ── Category icons ─────────────────────────────────────────────── */
-const CAT_ICON: Record<ProductCategory, string> = {
-  "vrf":        "❄️",
-  "isi-pompasi":"🌡️",
-  "klima":      "💨",
-  "kombi":      "🔥",
-  "yangin":     "🧯",
-  "tank":       "💧",
-  "boru":       "⚙️",
-  "radyator":   "♨️",
-};
+const BRAND_FILTERS = ["TÜMÜ", "Daikin", "Buderus", "Viessmann", "Caleffi", "Tyco", "Lowara", "Vaillant"];
 
-const ALL_CATS: { key: ProductCategory | "all"; label: string }[] = [
-  { key: "all",        label: "Tümü"           },
-  { key: "vrf",        label: "VRF"            },
-  { key: "isi-pompasi",label: "Isı Pompası"    },
-  { key: "klima",      label: "Klima"          },
-  { key: "kombi",      label: "Kazan / Kombi"  },
-  { key: "yangin",     label: "Yangın"         },
-  { key: "tank",       label: "Tank"           },
-  { key: "boru",       label: "Boru / Pompa"   },
+const SIDEBAR_CATEGORIES: { key: ProductCategory | "all"; label: string }[] = [
+  { key: "all", label: "Tümü" },
+  { key: "klima", label: "Klima" },
+  { key: "vrf", label: "Fancoil" },
+  { key: "isi-pompasi", label: "Isı Pompası" },
+  { key: "kombi", label: "Kazan" },
+  { key: "yangin", label: "Yangın" },
+  { key: "radyator", label: "Radyatör" },
+  { key: "boru", label: "Hidrofor" },
 ];
 
 /* ── Single product card ────────────────────────────────────────── */
-function ProductCard({ product }: { product: (typeof PRODUCTS)[0] }) {
+function ProductCard({ product }: { product: Product }) {
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(false);
-  const icon  = CAT_ICON[product.category] ?? "🔧";
   const label = CATEGORY_LABEL[product.category].tr;
+  const hasImg = Boolean(product.image && product.image !== "/placeholder.svg");
 
-  const open = () => window.open(`/urunler/${product.id}`, "_blank", "noopener,noreferrer");
+  const open = () => {
+    navigate({ to: "/urunler/$slug", params: { slug: product.id } });
+  };
 
   return (
     <div
+      className="product-engine-card"
       role="button"
       tabIndex={0}
       onMouseEnter={() => setHovered(true)}
@@ -58,8 +55,10 @@ function ProductCard({ product }: { product: (typeof PRODUCTS)[0] }) {
         background: hovered
           ? "var(--terminal-surface2, #0d1520)"
           : "var(--terminal-surface, #080d14)",
-        border: `1px solid ${hovered ? "rgba(0,240,255,0.28)" : "var(--terminal-border, rgba(0,240,255,0.1))"}`,
         borderTop: "2px solid rgba(0,240,255,0.22)",
+        borderRight: `1px solid ${hovered ? "rgba(0,240,255,0.28)" : "var(--terminal-border, rgba(0,240,255,0.1))"}`,
+        borderBottom: `1px solid ${hovered ? "rgba(0,240,255,0.28)" : "var(--terminal-border, rgba(0,240,255,0.1))"}`,
+        borderLeft: `1px solid ${hovered ? "rgba(0,240,255,0.28)" : "var(--terminal-border, rgba(0,240,255,0.1))"}`,
         borderRadius: "6px",
         padding: "1.4rem 1.25rem 1.25rem",
         cursor: "pointer",
@@ -81,14 +80,27 @@ function ProductCard({ product }: { product: (typeof PRODUCTS)[0] }) {
         {label}
       </span>
 
-      {/* Icon — large when not hovered, smaller when hovered */}
+      {/* Image or neutral placeholder */}
       <div style={{
-        fontSize: hovered ? "1.75rem" : "2.5rem",
-        lineHeight: 1,
-        transition: "font-size 220ms ease",
-        userSelect: "none",
+        height: hovered ? 52 : 64,
+        borderRadius: "6px",
+        background: "rgba(0,0,0,0.35)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+        transition: "height 220ms ease",
+        color: "rgba(0,240,255,0.35)",
       }}>
-        {icon}
+        {hasImg ? (
+          <img
+            src={product.image}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
+        ) : (
+          <Package size={hovered ? 28 : 34} strokeWidth={1.25} aria-hidden />
+        )}
       </div>
 
       {/* Product name — always visible */}
@@ -150,28 +162,126 @@ function ProductCard({ product }: { product: (typeof PRODUCTS)[0] }) {
   );
 }
 
+interface SidebarFiltersProps {
+  search: string;
+  activeBrand: string;
+  activeCategory: ProductCategory | "all";
+  filterOpen: boolean;
+  filteredCount: number;
+  onToggle: () => void;
+  onSearchChange: (value: string) => void;
+  onBrandChange: (value: string) => void;
+  onCategoryChange: (value: ProductCategory | "all") => void;
+}
+
+function SidebarFilters({
+  search,
+  activeBrand,
+  activeCategory,
+  filterOpen,
+  filteredCount,
+  onToggle,
+  onSearchChange,
+  onBrandChange,
+  onCategoryChange,
+}: SidebarFiltersProps) {
+  return (
+    <aside className={`filter-panel${filterOpen ? " open" : " collapsed"}`} aria-label="Ürün kataloğu filtreleri">
+      <button type="button" className="filter-toggle" onClick={onToggle}>
+        {filterOpen ? "◀ Filtreleri Gizle" : "▶ Filtreler"}
+      </button>
+      {filterOpen && (
+        <div className="filter-content">
+          <input
+            type="search"
+            className="catalog-search"
+            placeholder="Ürün veya marka ara..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
+
+          <div className="brand-chip-row" aria-label="Marka filtresi">
+            {BRAND_FILTERS.map((brand) => (
+              <button
+                key={brand}
+                type="button"
+                className={`brand-chip${activeBrand === brand ? " active" : ""}`}
+                onClick={() => onBrandChange(brand)}
+              >
+                {brand}
+              </button>
+            ))}
+          </div>
+
+          <div className="category-list" aria-label="Kategori filtresi">
+            {SIDEBAR_CATEGORIES.map((cat) => (
+              <button
+                key={cat.key}
+                type="button"
+                className={`category-item${activeCategory === cat.key ? " active" : ""}`}
+                onClick={() => onCategoryChange(cat.key)}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          <p className="catalog-results-count">
+            {filteredCount} ürün bulundu
+          </p>
+        </div>
+      )}
+    </aside>
+  );
+}
+
+function ProductGrid({ products }: { products: Product[] }) {
+  return (
+    <div
+      className="products-grid-area"
+      role="region"
+      aria-label="Ürün listesi — yatay kaydırın"
+    >
+      <div className="catalog-product-grid">
+        {products.length === 0 && (
+          <p className="catalog-empty-results">
+            Sonuç bulunamadı
+          </p>
+        )}
+        {products.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main section ───────────────────────────────────────────────── */
 const ProductEngine = () => {
-  const [activeCat, setActiveCat] = useState<ProductCategory | "all">("all");
-  const [query,     setQuery]     = useState("");
+  const products = getProducts();
+  const [search, setSearch] = useState("");
+  const [activeBrand, setActiveBrand] = useState("TÜMÜ");
+  const [activeCategory, setActiveCategory] = useState<ProductCategory | "all">("all");
+  const [filterOpen, setFilterOpen] = useState(true);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return PRODUCTS.filter((p) => {
-      const catMatch = activeCat === "all" || p.category === activeCat;
-      const qMatch   = !q ||
+  const filteredProducts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      const matchSearch =
+        q === "" ||
         p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        CATEGORY_LABEL[p.category].tr.toLowerCase().includes(q);
-      return catMatch && qMatch;
+        p.brand.toLowerCase().includes(q);
+      const matchBrand = activeBrand === "TÜMÜ" || p.brand === activeBrand;
+      const matchCategory = activeCategory === "all" || p.category === activeCategory;
+      return matchSearch && matchBrand && matchCategory;
     });
-  }, [activeCat, query]);
+  }, [activeBrand, activeCategory, products, search]);
 
   return (
     <section
       id="urunler"
+      className="product-catalog-section"
       style={{
-        background: "var(--terminal-bg, #020608)",
         padding: "clamp(60px, 10vw, 100px) clamp(20px, 6vw, 80px)",
         position: "relative",
       }}
@@ -183,95 +293,19 @@ const ProductEngine = () => {
         opacity: 0.3,
       }} />
 
-      {/* Section header */}
-      <div style={{ maxWidth: 1400, margin: "0 auto 2.5rem" }}>
-        <p style={{
-          fontFamily: "var(--font-premium-mono)", fontSize: "11px",
-          letterSpacing: "0.28em", textTransform: "uppercase",
-          color: "var(--electric-cyan,#00f0ff)", margin: "0 0 0.6rem",
-        }}>
-          // 04.PRODUCTS
-        </p>
-        <h2 style={{
-          fontFamily: "var(--font-premium-display)",
-          fontSize: "clamp(26px, 3.5vw, 48px)", fontWeight: 800,
-          color: "#fff", letterSpacing: "-0.02em", margin: "0 0 2rem",
-        }}>
-          Ürün Kataloğu
-        </h2>
-
-        {/* Controls row */}
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
-          {/* Search */}
-          <div style={{ position: "relative", flex: "1 1 200px", minWidth: "160px" }}>
-            <span style={{
-              position: "absolute", left: "11px", top: "50%", transform: "translateY(-50%)",
-              fontFamily: "var(--font-premium-mono)", fontSize: "12px",
-              color: "var(--electric-cyan,#00f0ff)", opacity: 0.5, pointerEvents: "none",
-            }}>›</span>
-            <input
-              type="search"
-              placeholder="Ürün veya marka ara..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: "var(--terminal-surface,#080d14)",
-                border: "1px solid var(--terminal-border,rgba(0,240,255,0.12))",
-                borderRadius: "4px",
-                padding: "9px 12px 9px 26px",
-                fontFamily: "var(--font-premium-mono)",
-                fontSize: "12px", color: "#fff", outline: "none",
-                transition: "border-color 200ms ease",
-              }}
-              onFocus={(e) => (e.target.style.borderColor = "var(--electric-cyan,#00f0ff)")}
-              onBlur={(e) => (e.target.style.borderColor = "var(--terminal-border,rgba(0,240,255,0.12))")}
-            />
-          </div>
-
-          {/* Category tabs */}
-          <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-            {ALL_CATS.map((cat) => {
-              const active = activeCat === cat.key;
-              return (
-                <button
-                  key={cat.key}
-                  onClick={() => setActiveCat(cat.key)}
-                  style={{
-                    fontFamily: "var(--font-premium-mono)", fontSize: "10px",
-                    letterSpacing: "0.1em", textTransform: "uppercase",
-                    padding: "6px 13px", borderRadius: "3px",
-                    border: active ? "1px solid var(--electric-cyan,#00f0ff)" : "1px solid rgba(255,255,255,0.1)",
-                    background: active ? "rgba(0,240,255,0.1)" : "transparent",
-                    color: active ? "var(--electric-cyan,#00f0ff)" : "rgba(255,255,255,0.4)",
-                    cursor: "pointer", transition: "all 160ms ease",
-                  }}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Product grid */}
-      <div style={{
-        maxWidth: 1400, margin: "0 auto",
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-        gap: "1rem",
-      }}>
-        {filtered.length === 0 && (
-          <p style={{
-            gridColumn: "1/-1", textAlign: "center",
-            fontFamily: "var(--font-premium-mono)", fontSize: "12px",
-            color: "rgba(255,255,255,0.25)", letterSpacing: "0.1em", padding: "4rem 0",
-          }}>
-            // Sonuç bulunamadı
-          </p>
-        )}
-        {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
+      <div className="catalog-layout">
+        <SidebarFilters
+          search={search}
+          activeBrand={activeBrand}
+          activeCategory={activeCategory}
+          filterOpen={filterOpen}
+          filteredCount={filteredProducts.length}
+          onToggle={() => setFilterOpen((v) => !v)}
+          onSearchChange={setSearch}
+          onBrandChange={setActiveBrand}
+          onCategoryChange={setActiveCategory}
+        />
+        <ProductGrid products={filteredProducts} />
       </div>
     </section>
   );
