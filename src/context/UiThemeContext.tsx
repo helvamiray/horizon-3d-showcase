@@ -25,19 +25,25 @@ function readStoredMode(): UiColorMode | null {
 }
 
 export function UiThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<UiColorMode>(() => {
-    if (typeof window === "undefined") return "dark";
-    return readStoredMode() ?? "dark";
-  });
+  /** SSR + ilk client paint aynı kalsın (localStorage sadece mount sonrası). */
+  const [mode, setModeState] = useState<UiColorMode>("dark");
+  const [mounted, setMounted] = useState(false);
 
   useLayoutEffect(() => {
+    setModeState(readStoredMode() ?? "dark");
+    setMounted(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!mounted) return;
     document.documentElement.setAttribute("data-ui-theme", mode);
+    document.documentElement.setAttribute("data-theme", mode);
     try {
       localStorage.setItem(UI_THEME_STORAGE_KEY, mode);
     } catch {
       /* ignore quota / private mode */
     }
-  }, [mode]);
+  }, [mounted, mode]);
 
   const setMode = (m: UiColorMode) => setModeState(m);
   const toggleMode = () =>

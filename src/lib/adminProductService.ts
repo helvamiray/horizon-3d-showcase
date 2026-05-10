@@ -29,6 +29,9 @@ export interface AdminProduct {
 
 const STORAGE_KEY = "vega_products";
 
+/** Same-tab listeners (`storage` only fires across tabs). */
+export const VEGA_CATALOG_UPDATED_EVENT = "vega-catalog-updated";
+
 const isBrowser = () => typeof window !== "undefined";
 
 const generateId = () => {
@@ -57,17 +60,54 @@ const read = (): AdminProduct[] => {
 const write = (products: AdminProduct[]) => {
   if (!isBrowser()) return;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  window.dispatchEvent(new Event(VEGA_CATALOG_UPDATED_EVENT));
 };
 
 const sortByDateDesc = (products: AdminProduct[]) =>
   [...products].sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
 
 export const productService = {
+  /** Yerel depodaki sıra (birleşik katalog görünümü için). */
+  getStoredRaw: (): AdminProduct[] => read(),
+
   getAll: (): AdminProduct[] => sortByDateDesc(read()),
 
   getById: (id: string): AdminProduct | null => {
     const product = read().find((p) => p.id === id);
     return product ?? null;
+  },
+
+  /**
+   * Anasayfa statik `PRODUCTS` satırı — ilk kayıtta depoya yazılır (`id` katalog id ile sabitlenir).
+   */
+  upsertCatalogProduct: (
+    catalogProductId: string,
+    data: Omit<AdminProduct, "id" | "createdAt" | "updatedAt">,
+  ): AdminProduct => {
+    const current = read();
+    const idx = current.findIndex(
+      (p) => p.id === catalogProductId || p.slug.trim() === catalogProductId,
+    );
+    const now = new Date().toISOString();
+    if (idx >= 0) {
+      const updated: AdminProduct = {
+        ...current[idx],
+        ...data,
+        id: catalogProductId,
+        updatedAt: now,
+      };
+      current[idx] = updated;
+      write(current);
+      return updated;
+    }
+    const created: AdminProduct = {
+      ...data,
+      id: catalogProductId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    write([...current, created]);
+    return created;
   },
 
   create: (product: Omit<AdminProduct, "id" | "createdAt" | "updatedAt">): AdminProduct => {
@@ -101,7 +141,9 @@ export const productService = {
   },
 
   delete: (id: string): void => {
-    write(read().filter((p) => p.id !== id));
+    write(
+      read().filter((p) => p.id !== id && p.slug.trim() !== id.trim()),
+    );
   },
 };
 

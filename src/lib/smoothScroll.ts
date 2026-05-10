@@ -39,3 +39,20 @@ export function destroySmoothScroll(): void {
     lenisInstance = null;
   }
 }
+
+/** Current vertical scroll (Lenis proxy when active). */
+export function getMainScrollY(): number {
+  if (typeof window === "undefined") return 0;
+  if (lenisInstance) return lenisInstance.scroll;
+  return window.scrollY || document.documentElement.scrollTop || 0;
+}
+
+/** Jump main document scroll — Lenis-aware for lg+ smooth scroll. */
+export function scrollMainDocumentTo(y: number): void {
+  if (typeof window === "undefined") return;
+  if (lenisInstance) {
+    lenisInstance.scrollTo(y, { immediate: true });
+    return;
+  }
+  window.scrollTo(0, y);
+}

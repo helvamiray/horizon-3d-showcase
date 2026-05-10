@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Link } from "@tanstack/react-router";
-import { type AdminProduct, productService } from "@/lib/adminProductService";
+import { type AdminProduct } from "@/lib/adminProductService";
 import { sceneComponentService, type SceneComponent } from "@/lib/sceneComponentService";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { getAdminMergedProductRows } from "@/lib/productService";
 
 const ADMIN_AUTH_KEY = "vega_admin_authed";
 
@@ -16,7 +17,7 @@ const SceneAdminPage = () => {
     if (typeof window === "undefined") return;
     setIsAuthed(window.sessionStorage.getItem(ADMIN_AUTH_KEY) === "1");
     setComponents(sceneComponentService.getAll());
-    setProducts(productService.getAll());
+    setProducts(getAdminMergedProductRows());
   }, []);
 
   const refresh = () => setComponents(sceneComponentService.getAll());

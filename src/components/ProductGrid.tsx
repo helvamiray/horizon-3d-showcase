@@ -1,13 +1,10 @@
-import { useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { type Product, type ProductCategory, CATEGORY_LABEL } from "@/data/products";
 import { useCart } from "@/providers/CartContext";
 import { toast } from "sonner";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { Zap, Thermometer, Wind } from "lucide-react";
-import { getVideoForProduct } from "@/constants/productVideos";
-import { DESKTOP_VIDEO_MEDIA } from "@/constants/videoAssets";
-import { preloadVideo } from "@/utils/videoPreload";
+import { Zap, Thermometer, Wind, Package } from "lucide-react";
+import { IconShoppingCart } from "@tabler/icons-react";
 
 interface ProductGridProps {
   products: Product[];
@@ -41,18 +38,17 @@ const ProductCard = ({
   const { add, openCart } = useCart();
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const name     = lang === "tr" ? p.name     : p.name_en;
   const specs    = (lang === "tr" ? p.specs    : p.specs_en).slice(0, 3);
   const category = CATEGORY_LABEL[p.category][lang];
   const isCooling = p.category === "klima";
   const accentColor = CAT_COLORS[p.category] ?? "var(--navy-primary)";
+  const hasImg = Boolean(p.image && p.image !== "/placeholder.svg");
 
   const onAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     add(p);
-    // Open cart after short delay so user sees the badge increment
     setTimeout(openCart, 400);
     toast.success(`${name} ${t("toast.added")}`, {
       action: { label: t("toast.openCart"), onClick: () => openCart() },
@@ -63,30 +59,21 @@ const ProductCard = ({
     <article
       className={`pcard${isCooling ? " card-cooling" : ""}`}
       onClick={() => onSelect(p.id)}
-      onMouseEnter={() => {
-        if (typeof window !== "undefined" && window.matchMedia(DESKTOP_VIDEO_MEDIA).matches) {
-          preloadVideo(getVideoForProduct(p.category));
-        }
-      }}
       style={active ? { boxShadow: `0 0 0 2px ${accentColor}`, borderColor: accentColor } : undefined}
       aria-current={active ? "true" : undefined}
     >
-      {/* Image / video area */}
       <div className="pcard-img-wrap card-img-wrap">
-        <video
-          ref={videoRef}
-          muted
-          loop
-          autoPlay
-          playsInline
-          preload="none"
-          poster={p.image}
-          aria-hidden="true"
-          style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 600ms var(--ease-premium)" }}
-          onMouseEnter={() => videoRef.current?.play().catch(() => undefined)}
-        >
-          <source src={p.video} type="video/mp4" />
-        </video>
+        {hasImg ? (
+          <img
+            src={p.image}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 600ms var(--ease-premium)" }}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-black/25">
+            <Package size={36} strokeWidth={1.25} className="text-white/35" aria-hidden />
+          </div>
+        )}
       </div>
 
       {/* Category colour bar */}
@@ -133,11 +120,11 @@ const ProductCard = ({
             onClick={onAdd}
             aria-label={`${name} — ${t("card.add")}`}
           >
+            <IconShoppingCart size={15} stroke={1.75} aria-hidden />
             {t("card.add")}
           </button>
         </div>
 
-        {/* Active indicator */}
         {active && (
           <div
             style={{

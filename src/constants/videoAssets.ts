@@ -8,8 +8,3 @@ export const HERO_VEGA_VIDEO = {
   mp4: "/videos/vega_tanitim.mp4",
   poster: "/img/posters/vega-hero.webp",
 } as const;
-
-export const ABOUT_CIRCLE_VIDEO = {
-  mp4: "/videos/tanitim.mp4",
-  poster: "/img/posters/tanitim-about.webp",
-} as const;

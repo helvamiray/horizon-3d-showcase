@@ -314,22 +314,26 @@
 }
 .pcard-btn-fill {
   flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   padding: 0.5rem;
-  background: var(--navy-primary);
-  border: 1.5px solid var(--navy-primary);
+  background: rgba(16, 185, 129, 0.14);
+  border: 1.5px solid rgba(52, 211, 153, 0.42);
   border-radius: 8px;
   font-family: var(--font-premium-display);
   font-size: 0.75rem;
   font-weight: 600;
-  color: #fff;
+  color: #ecfdf5;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   transition: all var(--dur-fast) var(--ease-smooth);
 }
 .pcard-btn-fill:hover {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: var(--navy-deep);
+  background: rgba(16, 185, 129, 0.24);
+  border-color: rgba(110, 231, 183, 0.58);
+  color: #f8fafc;
 }
 
 /* ===== Cart drawer (white premium) ===== */

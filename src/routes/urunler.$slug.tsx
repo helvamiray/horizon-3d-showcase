@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate, type NavigateFn } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { animate, spring } from "animejs";
@@ -7,31 +7,15 @@ import { ArrowLeft, ShoppingCart, X, ArrowRight, Phone, Mail, Copy, Check } from
 import { getProductById } from "@/lib/productService";
 import { CATEGORY_LABEL } from "@/data/products";
 import { useCart } from "@/providers/CartContext";
-import {
-  getVideoForProduct,
-  getPosterForProduct,
-} from "@/constants/productVideos";
 import { VEGA_CONTACTS } from "@/utils/contacts";
 import { contactService } from "@/lib/contactService";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { hashScrollIntoViewOptions } from "@/utils/navigateToHashSection";
+import { navigateBackToCatalog } from "@/lib/catalogNavigation";
 import "@/styles/product-detail.css";
 
 export const Route = createFileRoute("/urunler/$slug")({
   component: ProductDetailPage,
 });
-
-/** Matches `id="urunler"` on the home catalog section (ProductEngine / etc.). */
-const CATALOG_SECTION_HASH = "urunler";
-
-function navigateToCatalog(navigate: NavigateFn) {
-  navigate({
-    to: "/",
-    hash: CATALOG_SECTION_HASH,
-    resetScroll: false,
-    hashScrollIntoView: hashScrollIntoViewOptions(),
-  });
-}
 
 // ── Quote modal — white glassmorphism + Anime.js spring ──────────────────────
 interface QuoteModalProps {
@@ -414,9 +398,7 @@ function ProductDetailPage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const product   = getProductById(slug);
-  const videoSrc  = getVideoForProduct(product?.category ?? slug);
-  const posterSrc = getPosterForProduct(product?.category ?? slug);
+  const product = getProductById(slug);
 
   const copyPageUrl = () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -459,6 +441,12 @@ function ProductDetailPage() {
   const specLines = lang === "tr" ? product.specs : product.specs_en;
   const categoryLabel = CATEGORY_LABEL[product.category]?.[lang] ?? product.category;
   const showImage = Boolean(product.image && !product.image.includes("placeholder"));
+  const heroBgSrc =
+    product.image?.trim() &&
+    !product.image.includes("placeholder") &&
+    product.image !== "/placeholder.svg"
+      ? product.image
+      : undefined;
 
   const handleAddToCart = () => {
     add(product);
@@ -470,22 +458,18 @@ function ProductDetailPage() {
   return (
     <>
       <div className="product-detail-page">
-        {/* Background video */}
-        <div className="video-background">
-          <video
-            autoPlay muted loop playsInline preload="metadata"
-            poster={posterSrc}
-            className="bg-video"
-          >
-            <source src={videoSrc} type="video/mp4" />
-          </video>
-          <div className="video-overlay" />
+        {/* Static image backdrop (no video) */}
+        <div className="product-detail-static-bg" aria-hidden>
+          {heroBgSrc ? (
+            <img src={heroBgSrc} alt="" className="product-detail-bg-image" decoding="async" />
+          ) : null}
+          <div className="product-detail-bg-overlay" />
         </div>
 
         {/* Back button */}
         <button
           className="back-button"
-          onClick={() => navigateToCatalog(navigate)}
+          onClick={() => navigateBackToCatalog(navigate, product)}
           aria-label={t("productDetail.back")}
         >
           <ArrowLeft size={16} />
@@ -631,10 +615,11 @@ function ProductDetailPage() {
 
 function ProductNotFound({ slug }: { slug: string }) {
   const navigate = useNavigate();
+  const ghost = getProductById(slug);
   return (
     <div className="not-found-page">
       <p>Ürün bulunamadı: {slug}</p>
-      <button type="button" onClick={() => navigateToCatalog(navigate)}>
+      <button type="button" onClick={() => navigateBackToCatalog(navigate, ghost ?? undefined)}>
         Ana Sayfaya Dön
       </button>
     </div>

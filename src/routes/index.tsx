@@ -2,10 +2,11 @@ import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { lazy, Suspense, useEffect } from "react";
 
 import { Navbar } from "@/components/Navbar";
-import HeroVideo from "@/components/HeroVideo";
-import FlashlightOverlay from "@/components/FlashlightOverlay";
+import InteractiveShowroomHero from "@/components/showroom/InteractiveShowroomHero";
+import { ShowroomFilterProvider } from "@/context/ShowroomFilterContext";
 
 import { hashScrollIntoViewOptions } from "@/utils/navigateToHashSection";
+import { VEGA_CATALOG_SCROLL_KEY } from "@/constants/catalogScroll";
 import "@/styles/gravity.css";
 
 const HomeDeferredSections = lazy(() => import("@/components/home/HomeDeferredSections"));
@@ -63,7 +64,14 @@ function Index() {
     return () => {
       cancelled = true;
       clearTimeout(prefetchDeferred);
-      void import("@/lib/smoothScroll").then((m) => m.destroySmoothScroll());
+      void import("@/lib/smoothScroll").then((m) => {
+        try {
+          sessionStorage.setItem(VEGA_CATALOG_SCROLL_KEY, String(m.getMainScrollY()));
+        } catch {
+          /* ignore */
+        }
+        m.destroySmoothScroll();
+      });
       void import("gsap/ScrollTrigger").then((ST) => {
         ST.ScrollTrigger.getAll().forEach((t) => t.kill());
       });
@@ -71,24 +79,25 @@ function Index() {
   }, []);
 
   return (
-    <div
-      className="landing-page"
-      style={{
-        fontFamily: "var(--font-premium-body, 'Inter', sans-serif)",
-        background: "var(--terminal-bg, #020608)",
-        overflowX: "hidden",
-      }}
-    >
-      <FlashlightOverlay />
-      <Navbar />
+    <ShowroomFilterProvider>
+      <div
+        className="landing-page"
+        style={{
+          fontFamily: "var(--font-premium-body, 'Inter', sans-serif)",
+          background: "var(--terminal-bg, #020608)",
+          overflowX: "hidden",
+        }}
+      >
+        <Navbar />
 
-      <HeroVideo nextSectionId="hakkimizda" />
+        <InteractiveShowroomHero nextSectionId="hakkimizda" />
 
-      <div className="main-content">
-        <Suspense fallback={null}>
-          <HomeDeferredSections />
-        </Suspense>
+        <div className="main-content">
+          <Suspense fallback={null}>
+            <HomeDeferredSections />
+          </Suspense>
+        </div>
       </div>
-    </div>
+    </ShowroomFilterProvider>
   );
 }

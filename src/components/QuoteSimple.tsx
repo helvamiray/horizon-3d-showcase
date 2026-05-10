@@ -1,14 +1,57 @@
 import { useState } from "react";
-import { ArrowRight, MapPin, Instagram, Linkedin, Phone, Mail } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import {
+  IconBrandInstagram,
+  IconBrandLinkedin,
+  IconMail,
+  IconMapPin,
+  IconPhone,
+} from "@tabler/icons-react";
 import { useMagneticButton } from "@/hooks/useMagneticButton";
-import { VEGA_CONTACTS, VEGA_SOCIAL_HREF, openMaps } from "@/utils/contacts";
+import { VEGA_CONTACTS } from "@/utils/contacts";
 import { contactService } from "@/lib/contactService";
+import { FloatingDockDemo, type DockItem } from "@/components/ui/floating-dock";
 
 interface FormState {
   name: string;
   email: string;
   message: string;
 }
+
+const MAPS_DIRECTIONS_HREF = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Şişli, İstanbul")}`;
+
+const INSTAGRAM_HREF = "https://www.instagram.com/vega.enerji/";
+const LINKEDIN_HREF = "https://www.linkedin.com/company/vegaiklimlendirme/";
+
+const iconCls = "h-full w-full text-neutral-500 dark:text-neutral-300";
+
+const CONTACT_DOCK_ITEMS: DockItem[] = [
+  {
+    title: "E-posta",
+    icon: <IconMail className={iconCls} stroke={1.5} />,
+    href: "mailto:mirayhelva15@icloud.com",
+  },
+  {
+    title: "Telefon",
+    icon: <IconPhone className={iconCls} stroke={1.5} />,
+    href: "tel:+902120000000",
+  },
+  {
+    title: "Adres",
+    icon: <IconMapPin className={iconCls} stroke={1.5} />,
+    href: MAPS_DIRECTIONS_HREF,
+  },
+  {
+    title: "Instagram",
+    icon: <IconBrandInstagram className={iconCls} stroke={1.5} />,
+    href: INSTAGRAM_HREF,
+  },
+  {
+    title: "LinkedIn",
+    icon: <IconBrandLinkedin className={iconCls} stroke={1.5} />,
+    href: LINKEDIN_HREF,
+  },
+];
 
 const QuoteSimple = () => {
   const [form, setForm] = useState<FormState>({ name: "", email: "", message: "" });
@@ -98,150 +141,7 @@ const QuoteSimple = () => {
             uzman ekibimize ulaşın.
           </p>
 
-          {/* Clickable address */}
-          <button
-            onClick={openMaps}
-            aria-label="Haritada göster"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              background: "none",
-              border: "none",
-              color: "var(--quote-link)",
-              transition: "color 200ms ease",
-              textAlign: "left",
-            }}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--quote-link-hover)")}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = "var(--quote-link)")}
-          >
-            <MapPin size={16} style={{ color: "var(--gold, #c9a84c)", flexShrink: 0 }} />
-            <span>
-              {VEGA_CONTACTS.address}
-              <span
-                style={{
-                  marginLeft: "8px",
-                  fontFamily: "var(--font-premium-mono)",
-                  fontSize: "10px",
-                  letterSpacing: "0.1em",
-                  color: "var(--gold, #c9a84c)",
-                  textTransform: "uppercase",
-                }}
-              >
-                → Yol Tarifi Al
-              </span>
-            </span>
-          </button>
-
-          {/* Phone + email direct links */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
-            <a
-              href={`tel:${VEGA_CONTACTS.phone}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                color: "var(--quote-link)",
-                textDecoration: "none",
-                fontFamily: "var(--font-premium-body)",
-                fontSize: "0.9375rem",
-                transition: "color 200ms ease",
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)")}
-            >
-              <Phone size={15} style={{ color: "var(--gold, #c9a84c)", flexShrink: 0 }} />
-              {VEGA_CONTACTS.phone}
-            </a>
-            <a
-              href={`mailto:${VEGA_CONTACTS.email}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                color: "var(--quote-link)",
-                textDecoration: "none",
-                fontFamily: "var(--font-premium-body)",
-                fontSize: "0.9375rem",
-                transition: "color 200ms ease",
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)")}
-            >
-              <Mail size={15} style={{ color: "var(--gold, #c9a84c)", flexShrink: 0 }} />
-              {VEGA_CONTACTS.email}
-            </a>
-          </div>
-
-          {/* Social links */}
-          <div style={{ display: "flex", gap: "0.75rem" }}>
-            <a
-              href={VEGA_SOCIAL_HREF.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                background: "var(--quote-social-bg)",
-                border: "1px solid var(--quote-social-border)",
-                borderRadius: "10px",
-                padding: "10px 16px",
-                color: "var(--quote-link)",
-                cursor: "pointer",
-                fontFamily: "var(--font-premium-body)",
-                fontSize: "0.8125rem",
-                fontWeight: 500,
-                transition: "background 200ms ease, color 200ms ease",
-                textDecoration: "none",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg-hover)";
-                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg)";
-                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)";
-              }}
-            >
-              <Instagram size={15} />
-              Instagram
-            </a>
-            <a
-              href={VEGA_SOCIAL_HREF.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                background: "var(--quote-social-bg)",
-                border: "1px solid var(--quote-social-border)",
-                borderRadius: "10px",
-                padding: "10px 16px",
-                color: "var(--quote-link)",
-                cursor: "pointer",
-                fontFamily: "var(--font-premium-body)",
-                fontSize: "0.8125rem",
-                fontWeight: 500,
-                transition: "background 200ms ease, color 200ms ease",
-                textDecoration: "none",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg-hover)";
-                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link-hover)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "var(--quote-social-bg)";
-                (e.currentTarget as HTMLAnchorElement).style.color = "var(--quote-link)";
-              }}
-            >
-              <Linkedin size={15} />
-              LinkedIn
-            </a>
-          </div>
+          <FloatingDockDemo items={CONTACT_DOCK_ITEMS} className="mt-8" />
         </div>
 
         {/* Right: 3-field form */}

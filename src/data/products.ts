@@ -8,6 +8,9 @@ export type ProductCategory =
   | "tank"
   | "yangin";
 
+/** Pricelist currency when set from Admin; catalog defaults omit both. */
+export type ProductCurrency = "TRY" | "USD" | "EUR";
+
 export interface Product {
   id: string;
   name: string;
@@ -22,6 +25,8 @@ export interface Product {
   image: string;
   video: string;
   preview3d?: "ac" | "heatpump" | "fire-extinguisher";
+  price?: number;
+  currency?: ProductCurrency;
 }
 
 const FALLBACK_VIDEO  = "/videos/isi_pompasi.mp4";
@@ -211,7 +216,7 @@ export const PRODUCTS: Product[] = [
     id: "p-fire-tyco",
     name: "FM-200 Gazlı Yangın Söndürme Sistemi",
     name_en: "FM-200 Gas Fire Suppression System",
-    brand: "Tyco",
+    brand: "Honeywell",
     category: "yangin",
     componentKey: "fire-system",
     description:
@@ -285,9 +290,18 @@ export const PRODUCTS: Product[] = [
 ];
 
 export const BRANDS = [
-  "Daikin", "Mitsubishi Electric", "Viessmann", "Samsung", "Wilo",
-  "Grundfos", "Danfoss", "Buderus", "Tyco", "Honeywell",
-  "E.C.A", "CALEFFI", "FRANKISCHE",
+  "Daikin",
+  "Mitsubishi Electric",
+  "Viessmann",
+  "Samsung",
+  "Wilo",
+  "Grundfos",
+  "Danfoss",
+  "Buderus",
+  "Honeywell",
+  "E.C.A",
+  "CALEFFI",
+  "FRANKISCHE",
 ];
 
 export const CATEGORY_LABEL: Record<ProductCategory, { tr: string; en: string }> = {

@@ -155,6 +155,13 @@ export const translations = {
     "solutions.ind.b2": "Endüstriyel chiller ve proses soğutma",
     "solutions.ind.b3": "NFPA 13 uyumlu sprinkler ve köpüklü söndürme",
     "solutions.ind.b4": "SCADA & Modbus entegre enerji izleme",
+    "solutions.dual.corp.title": "KURUMSAL ÇÖZÜMLER",
+    "solutions.dual.corp.desc":
+      "Ofisler, hastaneler, AVM'ler ve kamu binaları için sürdürülebilir, yüksek verimli iklimlendirme ve mekanik otomasyon sistemleri.",
+    "solutions.dual.ind.title": "ENDÜSTRİYEL ÇÖZÜMLER",
+    "solutions.dual.ind.desc":
+      "Fabrikalar, veri merkezleri ve üretim tesisleri için hassas kontrollü soğutma, kazan dairesi kurulumu ve ağır hizmet tipi HVAC projeleri.",
+    "solutions.dual.cta": "İncele",
     "projects.eyebrow": "◉ Bölüm 05 — Aktif Projelerimiz",
     "projects.title": "Türkiye genelinde sahadayız.",
     "projects.subtitle":
@@ -318,6 +325,13 @@ export const translations = {
     "solutions.ind.b2": "Industrial chillers and process cooling",
     "solutions.ind.b3": "NFPA 13 sprinkler and foam suppression systems",
     "solutions.ind.b4": "SCADA & Modbus integrated energy monitoring",
+    "solutions.dual.corp.title": "CORPORATE SOLUTIONS",
+    "solutions.dual.corp.desc":
+      "Sustainable, high-efficiency climate control and mechanical automation for offices, hospitals, malls and public buildings.",
+    "solutions.dual.ind.title": "INDUSTRIAL SOLUTIONS",
+    "solutions.dual.ind.desc":
+      "Precision cooling, boiler room installation and heavy-duty HVAC for factories, data centres and manufacturing plants.",
+    "solutions.dual.cta": "Explore",
     "projects.eyebrow": "◉ Section 05 — Active Projects",
     "projects.title": "On site across Türkiye.",
     "projects.subtitle":

@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { initScrollReveal } from "@/lib/scrollReveal";
 import MissionVision from "@/components/MissionVision";
 import { AnimatedStats } from "@/components/AnimatedStats";
+import SolutionsSection from "@/components/SolutionsSection";
 import ProductSlider from "@/components/ProductSlider";
 import ProductEngine from "@/components/ProductEngine";
 import { SolutionPartners } from "@/components/SolutionPartners";
@@ -23,13 +24,27 @@ export default function HomeDeferredSections() {
     <>
       <MissionVision />
       <AnimatedStats />
+      <SolutionsSection />
       <ProductSlider />
       <ProductEngine />
-      <Suspense fallback={
-        <div style={{ height: "500px", display: "flex", alignItems: "center", justifyContent: "center", color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-premium-mono)", fontSize: "13px", letterSpacing: "0.1em" }}>
-          Harita yükleniyor…
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div
+            style={{
+              height: "500px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(255,255,255,0.3)",
+              fontFamily: "var(--font-premium-mono)",
+              fontSize: "13px",
+              letterSpacing: "0.1em",
+            }}
+          >
+            Harita yükleniyor…
+          </div>
+        }
+      >
         <TurkeyMapLive />
       </Suspense>
       <SolutionPartners />
