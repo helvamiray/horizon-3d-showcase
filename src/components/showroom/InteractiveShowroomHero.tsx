@@ -50,17 +50,16 @@ export default function InteractiveShowroomHero({ nextSectionId = "hakkimizda" }
     <>
       <section
         id="hero"
-      className="showroom-hero-fixed"
-      style={{
-        position: "relative",
-        width: "100vw",
-        height: "100vh",
-        overflow: "visible",
-        backgroundColor: "var(--terminal-bg, #020608)",
-        backgroundImage: `url(${SHOWROOM_HERO_IMAGE_URL})`,
-      }}
-      aria-label="VEGA showroom"
-    >
+        className="showroom-hero-fixed"
+        style={{
+          position: "relative",
+          width: "100vw",
+          /* height CSS sınıfında: 100vh fallback + 100dvh (iOS dvh desteği) */
+          backgroundColor: "var(--terminal-bg, #020608)",
+          backgroundImage: `url(${SHOWROOM_HERO_IMAGE_URL})`,
+        }}
+        aria-label="VEGA showroom"
+      >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/35 via-transparent to-black/45"
@@ -125,16 +124,14 @@ export default function InteractiveShowroomHero({ nextSectionId = "hakkimizda" }
         </div>
       </div>
 
-      {/* Mobil */}
-      <div
-        className="pointer-events-auto relative z-[55] md:hidden"
-        style={{
-          padding: "88px 16px 24px",
-          maxHeight: "100vh",
-          overflowY: "auto",
-        }}
-      >
-        <div className="mb-6 grid grid-cols-2 gap-3">
+      {/* Mobil — masaüstüyle aynı full-screen hero, sadeleştirilmiş overlay */}
+      <div className="showroom-mobile-hero-content md:hidden">
+        <span className="showroom-mobile-eyebrow">VEGA MÜHENDİSLİK</span>
+        <h1 className="showroom-mobile-title">
+          Akıllı HVAC &amp;<br />Enerji Sistemleri
+        </h1>
+
+        <div className="grid grid-cols-3 gap-2">
           {SHOWROOM_DEV_SCREEN_SLOTS.map((slot, idx) => {
             const product = productById.get(slot.productId);
             if (!product) return null;
@@ -143,11 +140,11 @@ export default function InteractiveShowroomHero({ nextSectionId = "hakkimizda" }
               <button
                 key={slot.id}
                 type="button"
-                className="flex flex-col overflow-hidden rounded-xl border border-cyan-500/35 bg-black/55 text-left shadow-lg backdrop-blur-md transition-colors hover:border-cyan-400/55 hover:bg-black/70"
+                className="flex flex-col overflow-hidden rounded-xl border border-cyan-500/30 bg-black/55 text-left shadow-lg backdrop-blur-md transition-all active:scale-95 hover:border-cyan-400/55"
                 onClick={() => openProduct(product.id)}
                 aria-label={product.name}
               >
-                <div className="relative aspect-[4/3] bg-black/40">
+                <div className="relative aspect-square bg-black/40">
                   {hasImg ? (
                     <img
                       src={product.image}
@@ -160,36 +157,20 @@ export default function InteractiveShowroomHero({ nextSectionId = "hakkimizda" }
                   ) : (
                     <div className="flex h-full items-center justify-center">
                       <Package
-                        className="h-10 w-10 text-cyan-400/35"
+                        className="h-8 w-8 text-cyan-400/35"
                         strokeWidth={1.25}
                         aria-hidden
                       />
                     </div>
                   )}
                 </div>
-                <span className="px-2 py-2 text-[11px] font-semibold leading-snug text-slate-100">
+                <span className="px-2 py-1.5 text-[10px] font-semibold leading-snug text-slate-100">
                   {product.name}
                 </span>
               </button>
             );
           })}
         </div>
-
-        <p className="showroom-ui-heading mt-10">Tüm ürünler</p>
-        <ul className="flex flex-col gap-2 p-0">
-          {products.map((p) => (
-            <li key={p.id}>
-              <button
-                type="button"
-                onClick={() => openProduct(p.id)}
-                className="w-full rounded-lg border border-white/12 bg-black/45 px-4 py-3 text-left text-sm text-[#f8fafc] backdrop-blur-md transition-all duration-200 hover:scale-[1.02] hover:border-cyan-200/20 hover:bg-black/55 hover:text-[#ecfeff]"
-              >
-                {p.name}
-                <span className="showroom-product-meta mt-1 block">{p.brand} · Detay</span>
-              </button>
-            </li>
-          ))}
-        </ul>
       </div>
 
       <div className="hero-scroll-cta-shell z-[60]">

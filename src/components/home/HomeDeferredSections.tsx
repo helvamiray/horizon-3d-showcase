@@ -2,13 +2,14 @@ import { lazy, Suspense, useEffect } from "react";
 import { initScrollReveal } from "@/lib/scrollReveal";
 import MissionVision from "@/components/MissionVision";
 import { AnimatedStats } from "@/components/AnimatedStats";
-import SolutionsSection from "@/components/SolutionsSection";
 import ProductSlider from "@/components/ProductSlider";
-import ProductEngine from "@/components/ProductEngine";
 import { SolutionPartners } from "@/components/SolutionPartners";
 import QuoteSimple from "@/components/QuoteSimple";
 import { SiteFooter } from "@/components/SiteFooter";
 
+// Fold altındaki ağır bileşenler — DOM mount edilince yükle
+const SolutionsSection = lazy(() => import("@/components/SolutionsSection"));
+const ProductEngine = lazy(() => import("@/components/ProductEngine"));
 // Leaflet needs the browser DOM — load only on the client
 const TurkeyMapLive = lazy(() => import("@/components/TurkeyMapLive"));
 
@@ -24,9 +25,13 @@ export default function HomeDeferredSections() {
     <>
       <MissionVision />
       <AnimatedStats />
-      <SolutionsSection />
+      <Suspense fallback={null}>
+        <SolutionsSection />
+      </Suspense>
       <ProductSlider />
-      <ProductEngine />
+      <Suspense fallback={null}>
+        <ProductEngine />
+      </Suspense>
       <Suspense
         fallback={
           <div
