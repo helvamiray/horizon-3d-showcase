@@ -349,6 +349,9 @@ const AdminProductsPage = () => {
                           src={p.images[0]}
                           alt={p.name}
                           className="h-10 w-10 rounded object-cover"
+                          decoding="async"
+                          loading="lazy"
+                          fetchPriority="low"
                         />
                       ) : (
                         <div className="h-10 w-10 rounded bg-white/10" />
@@ -538,6 +541,9 @@ const AdminProductsPage = () => {
                       src={src}
                       alt={`Uploaded ${idx + 1}`}
                       className="h-16 w-16 rounded object-cover"
+                      decoding="async"
+                      loading="lazy"
+                      fetchPriority="low"
                     />
                     <button
                       type="button"

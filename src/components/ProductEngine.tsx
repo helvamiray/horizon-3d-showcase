@@ -134,8 +134,8 @@ function ShowcaseProductCard({
             alt=""
             className="product-card-image"
             draggable={false}
-            loading={index < 8 ? "eager" : "lazy"}
-            fetchPriority={index < 6 ? "high" : undefined}
+            loading={index === 0 ? "eager" : "lazy"}
+            fetchPriority={index === 0 ? "high" : "low"}
           />
         ) : (
           <div className="product-card-image-placeholder" aria-hidden>

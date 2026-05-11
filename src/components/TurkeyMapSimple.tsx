@@ -38,8 +38,8 @@ const EDGES: [string, string][] = [
   ["antalya", "adana"],
 ];
 
-const MAP_SRC = "/assets/turkiye-map.png";
-const MAP_FALLBACK = "/img/turkiye-map.png";
+const MAP_SRC = "/assets/turkiye-map.webp";
+const MAP_FALLBACK = "/img/turkiye-map.webp";
 
 function Tooltip({ city }: { city: City }) {
   return (
@@ -73,7 +73,7 @@ function Tooltip({ city }: { city: City }) {
 }
 
 export interface TurkeyMapSimpleProps {
-  /** When true, no base image — use parent / section background (`/assets/turkiye-map.png`). */
+  /** When true, no base image — use parent / section background (`/assets/turkiye-map.webp`). */
   overlayOnly?: boolean;
 }
 
@@ -99,6 +99,9 @@ const TurkeyMapSimple = ({ overlayOnly = false }: TurkeyMapSimpleProps) => {
           src={MAP_SRC}
           alt="Türkiye haritası"
           draggable={false}
+          decoding="async"
+          loading="lazy"
+          fetchPriority="low"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src = MAP_FALLBACK;
           }}

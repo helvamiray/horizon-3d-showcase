@@ -14,7 +14,8 @@ interface ShowcaseSection {
   ctaHref: string;
   accentColor: string;
   borderAnimation: string;
-  videoSrc: string;
+  /** Static WebP — avoids multi‑MB MP4 on scroll sections */
+  posterSrc: string;
   visualClass: string;
 }
 
@@ -29,7 +30,7 @@ const SECTIONS: ShowcaseSection[] = [
     ctaHref: "#systems",
     accentColor: "var(--navy-primary)",
     borderAnimation: "none",
-    videoSrc: "/videos/isi_pompasi.mp4",
+    posterSrc: "/img/plate-exchanger.webp",
     visualClass: "",
   },
   {
@@ -42,7 +43,7 @@ const SECTIONS: ShowcaseSection[] = [
     ctaHref: "#systems",
     accentColor: "var(--vega-cyan)",
     borderAnimation: "frost",
-    videoSrc: "/videos/isi_pompasi.mp4",
+    posterSrc: "/img/mitsubishi-wall.webp",
     visualClass: "card-cooling",
   },
   {
@@ -55,7 +56,7 @@ const SECTIONS: ShowcaseSection[] = [
     ctaHref: "#systems",
     accentColor: "var(--cat-fire)",
     borderAnimation: "fire",
-    videoSrc: "/videos/isi_pompasi.mp4",
+    posterSrc: "/img/fire-valve.webp",
     visualClass: "fire-glow",
   },
   {
@@ -68,12 +69,12 @@ const SECTIONS: ShowcaseSection[] = [
     ctaHref: "#systems",
     accentColor: "var(--gold)",
     borderAnimation: "pendulum",
-    videoSrc: "/videos/isi_pompasi.mp4",
+    posterSrc: "/img/heat-pump.webp",
     visualClass: "heatpump-pendulum",
   },
 ];
 
-const ShowcaseItem = ({ s }: { s: ShowcaseSection }) => {
+const ShowcaseItem = ({ s, isFirst }: { s: ShowcaseSection; isFirst: boolean }) => {
   const { t } = useLanguage();
   const sectionRef = useRef<HTMLDivElement>(null);
   const textRef    = useRef<HTMLDivElement>(null);
@@ -206,11 +207,13 @@ const ShowcaseItem = ({ s }: { s: ShowcaseSection }) => {
             justifyContent: "center",
           }}
         >
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
+          <img
+            src={s.posterSrc}
+            alt=""
+            decoding="async"
+            loading={isFirst ? "eager" : "lazy"}
+            fetchPriority={isFirst ? "high" : "low"}
+            draggable={false}
             style={{
               width: "100%",
               height: "100%",
@@ -218,9 +221,7 @@ const ShowcaseItem = ({ s }: { s: ShowcaseSection }) => {
               borderRadius: "12px",
               opacity: 0.85,
             }}
-          >
-            <source src={s.videoSrc} type="video/mp4" />
-          </video>
+          />
         </div>
         {/* Colour-keyed accent overlay at bottom */}
         <div
@@ -242,8 +243,8 @@ const ShowcaseItem = ({ s }: { s: ShowcaseSection }) => {
 
 const ProductShowcase = () => (
   <section id="product-showcase">
-    {SECTIONS.map((s) => (
-      <ShowcaseItem key={s.id} s={s} />
+    {SECTIONS.map((s, i) => (
+      <ShowcaseItem key={s.id} s={s} isFirst={i === 0} />
     ))}
   </section>
 );

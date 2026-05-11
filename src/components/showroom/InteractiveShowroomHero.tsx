@@ -90,7 +90,7 @@ export default function InteractiveShowroomHero({ nextSectionId = "hakkimizda" }
         <div className="relative mx-auto h-full max-w-[1920px]">
           <div className="group/dev pointer-events-auto absolute left-[31%] top-[11%] z-10 h-[66%] w-[61%]">
             <div className="relative h-full w-full origin-center transition-transform duration-300 ease-out motion-safe:group-hover/dev:scale-[1.02] motion-safe:group-focus-within/dev:scale-[1.02]">
-              {SHOWROOM_DEV_SCREEN_SLOTS.map((slot) => {
+              {SHOWROOM_DEV_SCREEN_SLOTS.map((slot, idx) => {
                 const product = productById.get(slot.productId);
                 const shortLabel =
                   SHOWROOM_HERO_HOTSPOT_LABEL[slot.productId] ?? product?.name ?? "Ürün";
@@ -135,7 +135,7 @@ export default function InteractiveShowroomHero({ nextSectionId = "hakkimizda" }
         }}
       >
         <div className="mb-6 grid grid-cols-2 gap-3">
-          {SHOWROOM_DEV_SCREEN_SLOTS.map((slot) => {
+          {SHOWROOM_DEV_SCREEN_SLOTS.map((slot, idx) => {
             const product = productById.get(slot.productId);
             if (!product) return null;
             const hasImg = Boolean(product.image && product.image !== "/placeholder.svg");
@@ -154,6 +154,8 @@ export default function InteractiveShowroomHero({ nextSectionId = "hakkimizda" }
                       alt=""
                       className="absolute inset-0 h-full w-full object-contain p-2"
                       decoding="async"
+                      loading={idx === 0 ? "eager" : "lazy"}
+                      fetchPriority={idx === 0 ? "high" : "low"}
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">

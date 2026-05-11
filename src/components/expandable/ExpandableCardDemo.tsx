@@ -73,12 +73,15 @@ function CollapsedTile({
   dimmed,
   onOpen,
   onTeklifAl,
+  listIndex,
 }: {
   card: ExpandableCardData;
   variant: "grid" | "slider";
   dimmed: boolean;
   onOpen: () => void;
   onTeklifAl?: () => void;
+  /** Şerit / ızgarada ilk görünür kart — geri kalanı lazy yüklenir */
+  listIndex: number;
 }) {
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -123,6 +126,9 @@ function CollapsedTile({
             src={card.src}
             alt=""
             draggable={false}
+            decoding="async"
+            loading={listIndex === 0 ? "eager" : "lazy"}
+            fetchPriority={listIndex === 0 ? "high" : "low"}
             className={clsx(
               variant === "slider" ? "h-full w-full object-contain" : "max-h-full max-w-full object-contain",
             )}
@@ -290,6 +296,9 @@ export function ExpandableCardDemo({
                         <img
                           src={activeItem.src}
                           alt=""
+                          decoding="async"
+                          loading="eager"
+                          fetchPriority="high"
                           className="max-h-full max-w-full object-contain"
                         />
                       ) : (
@@ -380,7 +389,7 @@ export function ExpandableCardDemo({
   return (
     <LayoutGroup id={layoutGroupId}>
       <div className="contents">
-        {items.map((card) => (
+        {items.map((card, i) => (
           <CollapsedTile
             key={card.layoutKey}
             card={card}
@@ -388,6 +397,7 @@ export function ExpandableCardDemo({
             dimmed={activeKey === card.layoutKey}
             onOpen={() => setActiveKey(card.layoutKey)}
             onTeklifAl={variant === "slider" ? quoteOnly : undefined}
+            listIndex={i}
           />
         ))}
       </div>

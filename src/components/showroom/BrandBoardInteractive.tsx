@@ -181,7 +181,7 @@ export function BrandBoardInteractive({
               brandGridColsClass(brands.length),
             )}
           >
-            {brands.map((brand) => {
+            {brands.map((brand, logoIdx) => {
               const active = selectedKey === brand.key;
               const logoSrc = brand.logo.trim();
               const accent = brand.accentColor;
@@ -220,6 +220,9 @@ export function BrandBoardInteractive({
                           src={logoSrc}
                           alt=""
                           draggable={false}
+                          decoding="async"
+                          loading={logoIdx === 0 ? "eager" : "lazy"}
+                          fetchPriority={logoIdx === 0 ? "high" : "low"}
                           className="max-h-full max-w-full object-contain"
                           variants={logoVariants}
                           transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}

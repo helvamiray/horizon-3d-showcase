@@ -30,10 +30,13 @@ const ProductCard = ({
   p,
   active,
   onSelect,
+  cardIndex,
 }: {
   p: Product;
   active: boolean;
   onSelect: (id: string) => void;
+  /** İlk kart görünür LCP adayı — diğerleri `lazy`. */
+  cardIndex: number;
 }) => {
   const { add, openCart } = useCart();
   const { t, lang } = useLanguage();
@@ -67,6 +70,9 @@ const ProductCard = ({
           <img
             src={p.image}
             alt=""
+            decoding="async"
+            loading={cardIndex === 0 ? "eager" : "lazy"}
+            fetchPriority={cardIndex === 0 ? "high" : "low"}
             style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 600ms var(--ease-premium)" }}
           />
         ) : (
@@ -153,10 +159,11 @@ const ProductGrid = ({ products, selectedId, onSelect }: ProductGridProps) => (
       gap: "1rem",
     }}
   >
-    {products.map((p) => (
+    {products.map((p, i) => (
       <ProductCard
         key={p.id}
         p={p}
+        cardIndex={i}
         active={p.id === selectedId}
         onSelect={onSelect}
       />

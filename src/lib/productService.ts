@@ -18,25 +18,23 @@ const ALL_CATEGORIES: ProductCategory[] = [
   "yangin",
 ];
 
-/** Maps catalog category to scene `componentKey`, hero video, and optional 3D preview. */
+/** Maps catalog category to scene `componentKey` and optional 3D preview. */
 const PRODUCT_CATALOG_SYNC: Record<
   ProductCategory,
-  { componentKey: string; video: string; preview3d?: Product["preview3d"] }
+  { componentKey: string; preview3d?: Product["preview3d"] }
 > = {
-  vrf: { componentKey: "ac-units", video: "/videos/klima.mp4", preview3d: "ac" },
+  vrf: { componentKey: "ac-units", preview3d: "ac" },
   "isi-pompasi": {
     componentKey: "heatpump",
-    video: "/videos/isi_pompasi.mp4",
     preview3d: "heatpump",
   },
-  kombi: { componentKey: "boiler", video: "/videos/kazan.mp4" },
-  klima: { componentKey: "ac-units", video: "/videos/klima.mp4", preview3d: "ac" },
-  radyator: { componentKey: "radiators", video: "/videos/kazan.mp4" },
-  boru: { componentKey: "pump", video: "/videos/kazan.mp4" },
-  tank: { componentKey: "tank", video: "/videos/kazan.mp4" },
+  kombi: { componentKey: "boiler" },
+  klima: { componentKey: "ac-units", preview3d: "ac" },
+  radyator: { componentKey: "radiators" },
+  boru: { componentKey: "pump" },
+  tank: { componentKey: "tank" },
   yangin: {
     componentKey: "fire-system",
-    video: "/videos/yangin.mp4",
     preview3d: "fire-extinguisher",
   },
 };
@@ -87,7 +85,6 @@ const toLegacyProduct = (p: AdminProduct): Product => {
     specs: specLines,
     specs_en: specLines,
     image: p.images[0] ?? "/placeholder.svg",
-    video: sync.video,
     preview3d: sync.preview3d,
     price: p.price,
     currency: p.currency,

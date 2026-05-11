@@ -157,17 +157,15 @@ const CartSidebar = () => {
                       background: "rgba(10,22,40,0.06)",
                     }}
                   >
-                    <video
-                      muted
-                      loop
-                      autoPlay
-                      playsInline
-                      preload="metadata"
-                      poster={product.image}
+                    <img
+                      src={product.image}
+                      alt=""
+                      decoding="async"
+                      loading="lazy"
+                      fetchPriority="low"
+                      draggable={false}
                       style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    >
-                      <source src={product.video} type="video/mp4" />
-                    </video>
+                    />
                   </div>
 
                   {/* Info */}

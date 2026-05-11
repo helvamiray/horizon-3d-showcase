@@ -23,35 +23,22 @@ export interface Product {
   specs: string[];
   specs_en: string[];
   image: string;
-  video: string;
   preview3d?: "ac" | "heatpump" | "fire-extinguisher";
   price?: number;
   currency?: ProductCurrency;
 }
 
-const FALLBACK_VIDEO  = "/videos/isi_pompasi.mp4";
-const FALLBACK_POSTER = "/placeholder.svg";
-
-/* Real image assets in /public/img/ */
+/* Product imagery — WebP under /public/img/ (no bundled MP4). */
 const IMG = {
-  daikinVrf:       "/img/daikin-vrf.png",
-  mitsubishiWall:  "/img/mitsubishi-wall.png",
-  chiller:         "/img/chiller-unit.png",
-  heatPump:        "/img/heat-pump.png",
-  wiloP:           "/videos/wilo-pump.png",
-  plateEx:         "/img/plate-exchanger.png",
-  fireValve:       "/img/fire-valve.png",
-  smokeEx:         "/img/smoke-exhaust.png",
-  firePump:        "/img/fire-pump.png",
-};
-
-/* Category-specific videos in /public/videos/ */
-const VID = {
-  klima:    "/videos/klima.mp4",
-  heatpump: "/videos/isi_pompasi.mp4",
-  kazan:    "/videos/kazan.mp4",
-  yangin:   "/videos/yangin.mp4",
-  vega:     "/videos/vega_tanitim.mp4",
+  daikinVrf:       "/img/daikin-vrf.webp",
+  mitsubishiWall:  "/img/mitsubishi-wall.webp",
+  chiller:         "/img/chiller-unit.webp",
+  heatPump:        "/img/heat-pump.webp",
+  wiloP:           "/img/wilo-pump.webp",
+  plateEx:         "/img/plate-exchanger.webp",
+  fireValve:       "/img/fire-valve.webp",
+  smokeEx:         "/img/smoke-exhaust.webp",
+  firePump:        "/img/fire-pump.webp",
 };
 
 export const PRODUCTS: Product[] = [
@@ -76,7 +63,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["Zoned cooling & heating", "Wi-Fi + BACnet control", "Ultra quiet: 48 dB(A)", "R-32 refrigerant", "8–50 kW capacity range"],
     image: IMG.daikinVrf,
-    video: VID.klima,
     preview3d: "ac",
   },
   {
@@ -98,7 +84,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["1:8 indoor unit ratio", "COP up to 4.0", "Long pipe: 165m", "R-32 / R-410A"],
     image: IMG.mitsubishiWall,
-    video: VID.klima,
   },
   /* ── Isı Pompası ─────────────────────────────────────────────── */
   {
@@ -121,7 +106,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["COP up to 5.1", "R-32 refrigerant", "4–16 kW range", "A+++ energy class", "EHPA certified"],
     image: IMG.heatPump,
-    video: VID.heatpump,
     preview3d: "heatpump",
   },
   {
@@ -143,7 +127,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["Monobloc design", "5–16 kW", "Underfloor compatible", "SmartThings integration"],
     image: IMG.chiller,
-    video: VID.heatpump,
   },
   /* ── Klima ────────────────────────────────────────────────────── */
   {
@@ -165,7 +148,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["A++ energy class", "2.0–5.0 kW", "Wi-Fi (Daikin Online)", "Streamer air purification"],
     image: IMG.mitsubishiWall,
-    video: VID.klima,
     preview3d: "ac",
   },
   /* ── Kombi / Kazan ───────────────────────────────────────────── */
@@ -188,7 +170,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["Up to 109% efficiency", "24–34 kW", "Modbus + OpenTherm", "ErP 2021 compliant"],
     image: IMG.plateEx,
-    video: VID.kazan,
   },
   {
     id: "p-boiler-industrial",
@@ -209,7 +190,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["100–400 kW", "Cascade connection", "BMS integration", "108% efficiency"],
     image: IMG.chiller,
-    video: VID.kazan,
   },
   /* ── Yangın Sistemleri ───────────────────────────────────────── */
   {
@@ -231,7 +211,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["TS EN 15004 certified", "10s discharge time", "Electronic + pneumatic trigger", "UL/FM approved"],
     image: IMG.fireValve,
-    video: VID.yangin,
     preview3d: "fire-extinguisher",
   },
   {
@@ -253,7 +232,6 @@ export const PRODUCTS: Product[] = [
     ],
     specs_en: ["EN 54-2/4 certified", "2×127 address capacity", "BACnet/IP + Modbus", "Graphical software"],
     image: IMG.smokeEx,
-    video: VID.yangin,
   },
   /* ── Tank / Radyatör / Boru ──────────────────────────────────── */
   {
@@ -269,7 +247,6 @@ export const PRODUCTS: Product[] = [
     specs: ["AISI 316 iç yüzey", "PU köpük 80mm", "Solar serpantin", "100–2000 L seçenek"],
     specs_en: ["AISI 316 inner", "80mm PU foam", "Solar coil", "100–2000 L options"],
     image: IMG.firePump,
-    video: VID.kazan,
   },
   {
     id: "p-pump-wilo",
@@ -285,7 +262,6 @@ export const PRODUCTS: Product[] = [
     specs: ["EEI ≤ 0.20", "Wilo-Net / Modbus", "Otomatik adapt", "Döküm gövde"],
     specs_en: ["EEI ≤ 0.20", "Wilo-Net / Modbus", "Auto-adapt", "Cast-iron body"],
     image: IMG.wiloP,
-    video: VID.kazan,
   },
 ];
 

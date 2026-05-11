@@ -63,9 +63,12 @@ const SHELL_CLASS =
 export function ThreeDCard({
   product,
   categoryLabel,
+  cardIndex,
 }: {
   product: Product;
   categoryLabel: string;
+  /** Liste içinde ilk kart tek “yüksek öncelik” görsel (geri kalanı lazy). */
+  cardIndex: number;
 }) {
   const { add, openCart } = useCart();
   const { t } = useLanguage();
@@ -161,6 +164,9 @@ export function ThreeDCard({
                 alt=""
                 className="max-h-36 w-full object-contain"
                 draggable={false}
+                decoding="async"
+                loading={cardIndex === 0 ? "eager" : "lazy"}
+                fetchPriority={cardIndex === 0 ? "high" : "low"}
               />
             ) : (
               <Package className="text-slate-500/45" size={48} strokeWidth={1.2} aria-hidden />
@@ -214,8 +220,8 @@ export function ThreeDCard({
 export function ThreeDCardDemo({ products }: { products: Product[] }) {
   return (
     <>
-      {products.map((p) => (
-        <ThreeDCard key={p.id} product={p} categoryLabel={CATEGORY_LABEL[p.category].tr} />
+      {products.map((p, i) => (
+        <ThreeDCard key={p.id} product={p} categoryLabel={CATEGORY_LABEL[p.category].tr} cardIndex={i} />
       ))}
     </>
   );

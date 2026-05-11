@@ -461,7 +461,14 @@ function ProductDetailPage() {
         {/* Static image backdrop (no video) */}
         <div className="product-detail-static-bg" aria-hidden>
           {heroBgSrc ? (
-            <img src={heroBgSrc} alt="" className="product-detail-bg-image" decoding="async" />
+            <img
+              src={heroBgSrc}
+              alt=""
+              className="product-detail-bg-image"
+              decoding="async"
+              loading="eager"
+              fetchPriority="high"
+            />
           ) : null}
           <div className="product-detail-bg-overlay" />
         </div>
@@ -510,7 +517,14 @@ function ProductDetailPage() {
 
             {showImage && (
               <div className="product-detail-thumb-wrap" data-animate>
-                <img src={product.image} alt="" className="product-detail-thumb" />
+                <img
+                  src={product.image}
+                  alt=""
+                  className="product-detail-thumb"
+                  decoding="async"
+                  loading="lazy"
+                  fetchPriority="low"
+                />
               </div>
             )}
 
