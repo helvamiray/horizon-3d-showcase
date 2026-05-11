@@ -2916,11 +2916,15 @@
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  /* iOS Safari 15.4+ dvh: tarayıcı çubuğuna göre dinamik yükseklik */
+  height: 100vh;
+  height: 100dvh;
 }
 
 @media (max-width: 767px) {
   .showroom-hero-fixed {
     background-attachment: scroll;
+    overflow: hidden; /* mobil içerik taşmasını önle */
   }
 }
 
